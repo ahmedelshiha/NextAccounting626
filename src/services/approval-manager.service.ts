@@ -10,7 +10,7 @@ export interface ApprovalRequest {
 export class ApprovalManagerService {
   async requestApproval(stepId: string, approverEmails: string[]) {
     try {
-      const step = await prisma.workflowStep.findUnique({
+      const step = await prisma.workflow_steps.findUnique({
         where: { id: stepId },
         include: { workflow: true }
       })
@@ -18,7 +18,7 @@ export class ApprovalManagerService {
 
       const notifications = await Promise.all(
         approverEmails.map(email =>
-          prisma.workflowNotification.create({
+          prisma.workflow_notifications.create({
             data: {
               workflowId: step.workflowId,
               emailTo: email,
@@ -36,14 +36,14 @@ export class ApprovalManagerService {
 
   async approveStep(stepId: string, approverUserId: string, notes?: string) {
     try {
-      const step = await prisma.workflowStep.findUnique({
+      const step = await prisma.workflow_steps.findUnique({
         where: { id: stepId },
         include: { workflow: true }
       })
 
       if (!step) return { success: false, error: 'Step not found' }
 
-      await prisma.workflowStep.update({
+      await prisma.workflow_steps.update({
         where: { id: stepId },
         data: {
           approvedAt: new Date(),
@@ -53,7 +53,7 @@ export class ApprovalManagerService {
       })
 
       if (step.workflow) {
-        await prisma.workflowHistory.create({
+        await prisma.workflow_history.create({
           data: {
             workflowId: step.workflowId,
             eventType: 'STEP_APPROVED',
@@ -72,14 +72,14 @@ export class ApprovalManagerService {
 
   async rejectStep(stepId: string, rejectorUserId: string, reason: string) {
     try {
-      const step = await prisma.workflowStep.findUnique({
+      const step = await prisma.workflow_steps.findUnique({
         where: { id: stepId },
         include: { workflow: true }
       })
 
       if (!step) return { success: false, error: 'Step not found' }
 
-      await prisma.workflowStep.update({
+      await prisma.workflow_steps.update({
         where: { id: stepId },
         data: {
           status: 'PENDING',
@@ -88,7 +88,7 @@ export class ApprovalManagerService {
       })
 
       if (step.workflow) {
-        await prisma.workflowHistory.create({
+        await prisma.workflow_history.create({
           data: {
             workflowId: step.workflowId,
             eventType: 'STEP_REJECTED',
@@ -107,7 +107,7 @@ export class ApprovalManagerService {
 
   async getApprovalStatus(stepId: string) {
     try {
-      const step = await prisma.workflowStep.findUnique({
+      const step = await prisma.workflow_steps.findUnique({
         where: { id: stepId }
       })
       if (!step) return { approved: false }
@@ -123,7 +123,7 @@ export class ApprovalManagerService {
 
   async enforceSLA(workflowId: string, maxHours: number = 48) {
     try {
-      const workflow = await prisma.userWorkflow.findUnique({
+      const workflow = await prisma.user_workflows.findUnique({
         where: { id: workflowId },
         include: { steps: true }
       })
@@ -134,7 +134,7 @@ export class ApprovalManagerService {
       const slaDeadline = new Date(workflow.createdAt.getTime() + maxHours * 60 * 60 * 1000)
 
       if (now > slaDeadline && workflow.status !== 'COMPLETED' && workflow.status !== 'CANCELLED') {
-        await prisma.userWorkflow.update({
+        await prisma.user_workflows.update({
           where: { id: workflowId },
           data: {
             errorMessage: `SLA violation: Workflow exceeded ${maxHours}h deadline`,

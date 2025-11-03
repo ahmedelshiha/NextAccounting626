@@ -27,7 +27,7 @@ export const POST = withTenantContext(async (req: Request) => {
     const body = await req.json().catch(() => ({}))
     const data = validateImportWithSchema(body, OrganizationSettingsSchema)
 
-    const existing = await prisma.organizationSettings.findFirst({ where: tenantFilter(ctx.tenantId) }).catch(() => null)
+    const existing = await prisma.organization_settings.findFirst({ where: tenantFilter(ctx.tenantId) }).catch(() => null)
     const saveData: any = {
       tenantId: ctx.tenantId || undefined,
       name: data.general?.name ?? existing?.name ?? '',
@@ -46,8 +46,8 @@ export const POST = withTenantContext(async (req: Request) => {
     }
 
     const saved = existing
-      ? await prisma.organizationSettings.update({ where: { id: (existing as any).id }, data: saveData })
-      : await prisma.organizationSettings.create({ data: saveData })
+      ? await prisma.organization_settings.update({ where: { id: (existing as any).id }, data: saveData })
+      : await prisma.organization_settings.create({ data: saveData })
 
     try { await logAudit({ action: 'org-settings:import', actorId: ctx.userId, details: { tenantId: ctx.tenantId } }) } catch {}
     return NextResponse.json({ ok: true })

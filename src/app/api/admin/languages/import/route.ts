@@ -36,12 +36,12 @@ export const POST = withTenantContext(async (req: Request) => {
           continue
         }
 
-        const existing = await prisma.language.findUnique({
+        const existing = await prisma.languages.findUnique({
           where: { code: code.toLowerCase() },
         })
 
         if (existing) {
-          await prisma.language.update({
+          await prisma.languages.update({
             where: { code: code.toLowerCase() },
             data: {
               name,
@@ -54,7 +54,7 @@ export const POST = withTenantContext(async (req: Request) => {
           })
           results.updated++
         } else {
-          await prisma.language.create({
+          await prisma.languages.create({
             data: {
               code: code.toLowerCase(),
               name,

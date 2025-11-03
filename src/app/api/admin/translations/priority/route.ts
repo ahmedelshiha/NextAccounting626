@@ -21,7 +21,7 @@ export const GET = withTenantContext(async (request) => {
     if (searchParams.get('language')) filters.languageCode = searchParams.get('language')
     if (searchParams.get('key')) filters.key = { contains: searchParams.get('key') || '', mode: 'insensitive' }
 
-    const items = await prisma.translationPriority.findMany({ where: filters, orderBy: { updatedAt: 'desc' } })
+    const items = await prisma.translation_priorities.findMany({ where: filters, orderBy: { updatedAt: 'desc' } })
 
     return NextResponse.json({ success: true, data: items })
   } catch (error: any) {
@@ -45,7 +45,7 @@ export const POST = withTenantContext(async (request) => {
     }
 
     // Upsert by tenantId + key + languageCode
-    const upserted = await prisma.translationPriority.upsert({
+    const upserted = await prisma.translation_priorities.upsert({
       where: { tenantId_key_languageCode: { tenantId: ctx.tenantId, key, languageCode: languageCode ?? null } },
       update: {
         priority,

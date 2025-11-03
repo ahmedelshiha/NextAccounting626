@@ -25,9 +25,9 @@ export const GET = withTenantContext(async (req: Request) => {
     const dauSince = new Date(now)
     dauSince.setDate(now.getDate() - 1)
 
-    const dau = await prisma.userProfile.count({ where: { user: { tenantId }, lastLoginAt: { gte: dauSince } } })
-    const mau = await prisma.userProfile.count({ where: { user: { tenantId }, lastLoginAt: { gte: since } } })
-    const totalUsers = await prisma.userProfile.count({ where: { user: { tenantId } } })
+    const dau = await prisma.user_profiles.count({ where: { user: { tenantId }, lastLoginAt: { gte: dauSince } } })
+    const mau = await prisma.user_profiles.count({ where: { user: { tenantId }, lastLoginAt: { gte: since } } })
+    const totalUsers = await prisma.user_profiles.count({ where: { user: { tenantId } } })
 
     return Response.json({
       success: true,

@@ -20,7 +20,7 @@ export const GET = withTenantContext(async (req: Request) => {
     const since = new Date()
     since.setDate(since.getDate() - days)
 
-    const users = await prisma.userProfile.findMany({
+    const users = await prisma.user_profiles.findMany({
       where: {
         user: { tenantId },
         createdAt: { gte: since },

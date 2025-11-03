@@ -13,7 +13,7 @@ interface PageProps {
 export async function generateMetadata({ params }: any): Promise<Metadata> {
   const { slug } = (await Promise.resolve(params)) as { slug?: string }
   try {
-    const service = await prisma.service.findFirst({ where: { slug }, select: { name: true, description: true } })
+    const service = await prisma.services.findFirst({ where: { slug }, select: { name: true, description: true } })
     if (!service) return { title: 'Service not found' }
     return {
       title: `${service.name} | Accounting Firm Services`,
@@ -34,7 +34,7 @@ export default async function ServicePage({ params }: any) {
     let service = null
 
     if (hasDb) {
-      service = await prisma.service.findFirst({
+      service = await prisma.services.findFirst({
         where: { slug },
         select: {
           slug: true,
@@ -197,7 +197,7 @@ export default async function ServicePage({ params }: any) {
 
 export async function generateStaticParams() {
   try {
-    const services = await prisma.service.findMany({ where: { status: 'ACTIVE' as any }, select: { slug: true } })
+    const services = await prisma.services.findMany({ where: { status: 'ACTIVE' as any }, select: { slug: true } })
     if (services && services.length > 0) return services.map((s) => ({ slug: s.slug }))
   } catch {
     // ignore and fallback to default slugs

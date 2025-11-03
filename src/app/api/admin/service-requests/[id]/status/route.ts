@@ -35,10 +35,10 @@ export const PATCH = withTenantContext(async (req: Request, context: { params: P
   const parsed = Schema.safeParse(body)
   if (!parsed.success) return respond.badRequest('Invalid payload', zodDetails(parsed.error))
 
-  const existing = await prisma.serviceRequest.findFirst({ where: { id, ...getTenantFilter() } })
+  const existing = await prisma.service_requests.findFirst({ where: { id, ...getTenantFilter() } })
   if (!existing) return respond.notFound('Service request not found')
 
-  const updated = await prisma.serviceRequest.update({
+  const updated = await prisma.service_requests.update({
     where: { id },
     data: { status: parsed.data.status as any },
     include: { client: { select: { id: true, name: true, email: true } }, service: { select: { id: true, name: true } } }

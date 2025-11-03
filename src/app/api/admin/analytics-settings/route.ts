@@ -60,8 +60,8 @@ export const PUT = withTenantContext(async (request: Request) => {
       details: { category: 'analyticsReporting' } as Prisma.InputJsonValue,
       ...(actorUserId ? { userId: actorUserId } : {}),
     }
-    try { await prisma.settingChangeDiff.create({ data: diffPayload }) } catch {}
-    try { await prisma.auditEvent.create({ data: auditPayload }) } catch {}
+    try { await prisma.setting_change_diffs.create({ data: diffPayload }) } catch {}
+    try { await prisma.audit_events.create({ data: auditPayload }) } catch {}
     return NextResponse.json(updated)
   } catch (e) {
     try { Sentry.captureException(e as any) } catch {}

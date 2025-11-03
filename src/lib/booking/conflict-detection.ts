@@ -37,7 +37,7 @@ function endOfDay(d: Date) {
 export async function checkBookingConflict(params: CheckConflictParams): Promise<{ conflict: boolean; details?: ConflictDetails }> {
   const { serviceId, start, durationMinutes, excludeBookingId, teamMemberId } = params
 
-  const svc = await prisma.service.findUnique({ where: { id: serviceId } })
+  const svc = await prisma.services.findUnique({ where: { id: serviceId } })
   if (!svc || String((svc as any).status).toUpperCase() !== 'ACTIVE' || (svc as any).bookingEnabled === false) {
     return { conflict: true, details: { reason: 'SERVICE_INACTIVE' } }
   }
@@ -51,7 +51,7 @@ export async function checkBookingConflict(params: CheckConflictParams): Promise
   const windowStart = addMinutes(startOfDay(startDt), -Math.max(60, buffer))
   const windowEnd = addMinutes(endOfDay(startDt), Math.max(60, buffer))
 
-  const bookings = await prisma.booking.findMany({
+  const bookings = await prisma.bookings.findMany({
     where: {
       serviceId,
       status: { in: ['PENDING', 'CONFIRMED'] as any },

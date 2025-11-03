@@ -58,11 +58,11 @@ export class EntityRelationshipService {
    * Build complete entity relationship map
    */
   async buildRelationshipMap(): Promise<EntityRelationshipMap> {
-    const users = await prisma.user.findMany({
+    const users = await prisma.users.findMany({
       select: { id: true, email: true, name: true, role: true }
     })
 
-    const customRoles = await prisma.customRole.findMany({
+    const customRoles = await prisma.custom_roles.findMany({
       select: { id: true, name: true }
     })
 
@@ -120,7 +120,7 @@ export class EntityRelationshipService {
    * Find orphaned users (without team assignments)
    */
   async findOrphanedUsers(): Promise<string[]> {
-    const users = await prisma.user.findMany({
+    const users = await prisma.users.findMany({
       where: {
         teamMembers: {
           none: {}
@@ -136,7 +136,7 @@ export class EntityRelationshipService {
    * Detect role conflicts (overlapping permissions)
    */
   async detectRoleConflicts(): Promise<RoleConflict[]> {
-    const roles = await prisma.customRole.findMany({
+    const roles = await prisma.custom_roles.findMany({
       select: { id: true, name: true }
     })
 
@@ -168,7 +168,7 @@ export class EntityRelationshipService {
    * Find permission gaps for a specific user
    */
   async findPermissionGaps(userId: string, requiredPermissions: string[]): Promise<PermissionGap> {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId }
     })
 
@@ -195,8 +195,8 @@ export class EntityRelationshipService {
    * Analyze entity complexity
    */
   async analyzeComplexity(): Promise<Record<string, number>> {
-    const userCount = await prisma.user.count()
-    const roleCount = await prisma.customRole.count()
+    const userCount = await prisma.users.count()
+    const roleCount = await prisma.custom_roles.count()
 
     return {
       userCount,

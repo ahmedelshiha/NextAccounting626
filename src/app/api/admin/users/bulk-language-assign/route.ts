@@ -54,7 +54,7 @@ export const POST = async (request: Request) => {
 
     for (const userId of userIds) {
       try {
-        const userProfile = await prisma.userProfile.findUnique({
+        const userProfile = await prisma.user_profiles.findUnique({
           where: { userId },
           include: { user: true },
         })
@@ -71,7 +71,7 @@ export const POST = async (request: Request) => {
           continue
         }
 
-        await prisma.userProfile.update({
+        await prisma.user_profiles.update({
           where: { userId },
           data: { preferredLanguage: targetLanguage },
         })

@@ -9,7 +9,7 @@ export class ArchiveDataStepHandler extends BaseStepHandler {
     const { workflowId } = context
 
     try {
-      const workflow = await prisma.userWorkflow.findUnique({
+      const workflow = await prisma.user_workflows.findUnique({
         where: { id: workflowId },
         include: { user: true }
       })
@@ -30,7 +30,7 @@ export class ArchiveDataStepHandler extends BaseStepHandler {
         })
         archivedItems.tasks = tasks
 
-        const bookings = await prisma.booking.count({
+        const bookings = await prisma.bookings.count({
           where: { clientId: workflow.user.id }
         })
         archivedItems.bookings = bookings

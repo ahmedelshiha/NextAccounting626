@@ -97,7 +97,7 @@ export class BulkOperationsService {
     }
   ) {
     try {
-      const operation = await prisma.bulkOperation.create({
+      const operation = await prisma.bulk_operations.create({
         data: {
           tenantId,
           name: data.name,
@@ -128,7 +128,7 @@ export class BulkOperationsService {
    */
   async getBulkOperation(operationId: string) {
     try {
-      return await prisma.bulkOperation.findUnique({
+      return await prisma.bulk_operations.findUnique({
         where: { id: operationId },
         include: {
           results: {
@@ -164,13 +164,13 @@ export class BulkOperationsService {
       }
 
       const [operations, total] = await Promise.all([
-        prisma.bulkOperation.findMany({
+        prisma.bulk_operations.findMany({
           where,
           orderBy: { createdAt: 'desc' },
           take: limit,
           skip: offset
         }),
-        prisma.bulkOperation.count({ where })
+        prisma.bulk_operations.count({ where })
       ])
 
       return { operations, total, limit, offset }
@@ -207,7 +207,7 @@ export class BulkOperationsService {
       const estimatedDuration = Math.max(1000, affectedUsers.length * 50)
 
       // Store dry-run results
-      await prisma.bulkOperation.update({
+      await prisma.bulk_operations.update({
         where: { id: operationId },
         data: {
           dryRunResults: {
@@ -243,7 +243,7 @@ export class BulkOperationsService {
       }
 
       // Mark as in progress
-      await prisma.bulkOperation.update({
+      await prisma.bulk_operations.update({
         where: { id: operationId },
         data: {
           status: 'IN_PROGRESS',
@@ -266,7 +266,7 @@ export class BulkOperationsService {
           const result = await this.processUserOperation(user, (operation.operationConfig as any) as OperationConfig)
 
           // Create result record
-          await prisma.bulkOperationResult.create({
+          await prisma.bulk_operation_results.create({
             data: {
               bulkOperationId: operationId,
               userId: user.id,
@@ -288,7 +288,7 @@ export class BulkOperationsService {
           failureCount++
 
           // Record failure
-          await prisma.bulkOperationResult.create({
+          await prisma.bulk_operation_results.create({
             data: {
               bulkOperationId: operationId,
               userId: user.id,
@@ -300,7 +300,7 @@ export class BulkOperationsService {
       }
 
       // Mark as completed
-      const finalOperation = await prisma.bulkOperation.update({
+      const finalOperation = await prisma.bulk_operations.update({
         where: { id: operationId },
         data: {
           status: failureCount === 0 ? 'COMPLETED' : 'FAILED',
@@ -368,7 +368,7 @@ export class BulkOperationsService {
    */
   async approveBulkOperation(operationId: string, approvedBy: string) {
     try {
-      const operation = await prisma.bulkOperation.update({
+      const operation = await prisma.bulk_operations.update({
         where: { id: operationId },
         data: {
           approvalStatus: 'APPROVED',
@@ -398,7 +398,7 @@ export class BulkOperationsService {
    */
   async rejectBulkOperation(operationId: string, rejectedBy: string, reason?: string) {
     try {
-      const operation = await prisma.bulkOperation.update({
+      const operation = await prisma.bulk_operations.update({
         where: { id: operationId },
         data: {
           approvalStatus: 'REJECTED',
@@ -429,7 +429,7 @@ export class BulkOperationsService {
    */
   async cancelBulkOperation(operationId: string, cancelledBy: string) {
     try {
-      const operation = await prisma.bulkOperation.update({
+      const operation = await prisma.bulk_operations.update({
         where: { id: operationId },
         data: {
           status: 'CANCELLED',
@@ -467,7 +467,7 @@ export class BulkOperationsService {
       }
 
       // Get all results
-      const results = await prisma.bulkOperationResult.findMany({
+      const results = await prisma.bulk_operation_results.findMany({
         where: { bulkOperationId: operationId, status: 'SUCCESS' }
       })
 
@@ -479,7 +479,7 @@ export class BulkOperationsService {
       }
 
       // Mark operation as rollback complete
-      await prisma.bulkOperation.update({
+      await prisma.bulk_operations.update({
         where: { id: operationId },
         data: {
           status: 'CANCELLED',
@@ -522,7 +522,7 @@ export class BulkOperationsService {
         }
       }
 
-      return await prisma.user.findMany({
+      return await prisma.users.findMany({
         where,
         select: { id: true, name: true, email: true, role: true }
       })
@@ -600,7 +600,7 @@ export class BulkOperationsService {
         case 'ROLE_CHANGE':
           if (config.toRole) {
             changesBefore.role = user.role
-            await prisma.user.update({
+            await prisma.users.update({
               where: { id: user.id },
               data: { role: config.toRole as any }
             })
@@ -619,7 +619,7 @@ export class BulkOperationsService {
         case 'PERMISSION_GRANT':
           if (config.permissions && config.permissions.length > 0) {
             for (const permission of config.permissions) {
-              await prisma.userPermission.create({
+              await prisma.user_permissions.create({
                 data: {
                   userId: user.id,
                   permission
@@ -672,7 +672,7 @@ export class BulkOperationsService {
       }
 
       if (Object.keys(updates).length > 0) {
-        await prisma.user.update({
+        await prisma.users.update({
           where: { id: userId },
           data: updates
         })
@@ -693,7 +693,7 @@ export class BulkOperationsService {
     newValue?: any
   ) {
     try {
-      await prisma.bulkOperationHistory.create({
+      await prisma.bulk_operation_history.create({
         data: {
           bulkOperationId: operationId,
           eventType,

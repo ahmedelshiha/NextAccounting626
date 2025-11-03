@@ -50,7 +50,7 @@ export const GET = withTenantContext(async (request: Request) => {
   const { serviceId, dateFrom, dateTo, duration, teamMemberId, includePrice, currency } = parsed.data
 
   try {
-    const svcRow = await prisma.service.findUnique({ where: { id: serviceId }, select: { id: true, tenantId: true, duration: true } })
+    const svcRow = await prisma.services.findUnique({ where: { id: serviceId }, select: { id: true, tenantId: true, duration: true } })
     if (!svcRow) return respond.notFound('Service not found')
     if ((svcRow as any).tenantId && (svcRow as any).tenantId !== ctx.tenantId) {
       return respond.notFound('Service not found')
@@ -62,7 +62,7 @@ export const GET = withTenantContext(async (request: Request) => {
 
     if (includePrice) {
       const { calculateServicePrice } = await import('@/lib/booking/pricing')
-      const svc = await prisma.service.findUnique({ where: { id: serviceId } })
+      const svc = await prisma.services.findUnique({ where: { id: serviceId } })
       const slotMinutes = duration ?? Math.max(15, svc?.duration ?? 60)
       const enriched = await Promise.all(slots.map(async (s) => {
         const breakdown = await calculateServicePrice({ serviceId, scheduledAt: new Date(s.start), durationMinutes: slotMinutes, options: { currency } })

@@ -80,7 +80,7 @@ export class DryRunService {
     limit: number = 10
   ): Promise<EnhancedDryRunResult> {
     // Get users for preview
-    const users = await prisma.user.findMany({
+    const users = await prisma.users.findMany({
       where: {
         tenantId,
         id: { in: selectedUserIds }
@@ -193,7 +193,7 @@ export class DryRunService {
           }
 
           // Find dependent users (team members under this user)
-          const dependentUsers = await prisma.user.findMany({
+          const dependentUsers = await prisma.users.findMany({
             where: {
               tenantId,
               // Simple dependency check - can be expanded

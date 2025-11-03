@@ -15,7 +15,7 @@ export const GET = withTenantContext(async () => {
 
     const tenantId = ctx.tenantId as string
 
-    const settings = await prisma.organizationLocalizationSettings.findUnique({ where: { tenantId } })
+    const settings = await prisma.org_localization_settings.findUnique({ where: { tenantId } })
 
     if (!settings) {
       return Response.json({
@@ -50,7 +50,7 @@ export const PUT = withTenantContext(async (req: Request) => {
     const tenantId = ctx.tenantId as string
     const body = await req.json()
 
-    const settings = await prisma.organizationLocalizationSettings.upsert({
+    const settings = await prisma.org_localization_settings.upsert({
       where: { tenantId },
       create: {
         tenantId,

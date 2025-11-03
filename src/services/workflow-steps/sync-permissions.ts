@@ -9,7 +9,7 @@ export class SyncPermissionsStepHandler extends BaseStepHandler {
     const { workflowId } = context
 
     try {
-      const workflow = await prisma.userWorkflow.findUnique({
+      const workflow = await prisma.user_workflows.findUnique({
         where: { id: workflowId },
         include: { user: true }
       })

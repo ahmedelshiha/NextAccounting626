@@ -39,7 +39,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
     // Save to database (graceful fallback if DB is down)
     let submission
     try {
-      submission = await prisma.contactSubmission.create({
+      submission = await prisma.contact_submissions.create({
         data: {
           name,
           email,
@@ -131,7 +131,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
       where.responded = responded === 'true'
     }
 
-    const submissions = await prisma.contactSubmission.findMany({
+    const submissions = await prisma.contact_submissions.findMany({
       where,
       orderBy: {
         createdAt: 'desc'

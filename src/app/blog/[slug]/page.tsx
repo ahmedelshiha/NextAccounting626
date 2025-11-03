@@ -9,7 +9,7 @@ export default async function PostPage({ params }: any) {
   const slug = String(resolved?.slug || '')
 
   // Fetch post directly from the database on the server to avoid making internal HTTP requests
-  const post = await prisma.post.findUnique({
+  const post = await prisma.posts.findUnique({
     where: { slug },
     include: { author: { select: { id: true, name: true, image: true } } }
   })
@@ -18,7 +18,7 @@ export default async function PostPage({ params }: any) {
 
   // Increment views (best-effort, ignore errors)
   try {
-    await prisma.post.update({ where: { id: post.id }, data: { views: { increment: 1 } } })
+    await prisma.posts.update({ where: { id: post.id }, data: { views: { increment: 1 } } })
   } catch {
     // ignore
   }
@@ -65,7 +65,7 @@ export const dynamic = 'force-dynamic'
 export async function generateMetadata({ params }: any) {
   const resolved = (await Promise.resolve(params)) as { slug?: string }
   const slug = String(resolved?.slug || '')
-  const post = await prisma.post.findUnique({ where: { slug } })
+  const post = await prisma.posts.findUnique({ where: { slug } })
   if (!post) return {}
 
   return {

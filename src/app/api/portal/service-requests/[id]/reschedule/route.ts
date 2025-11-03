@@ -20,11 +20,11 @@ export const POST = withTenantContext(async (req: Request, context: { params: Pr
   if (!parsed.success) return respond.badRequest('Invalid payload', { issues: parsed.error.issues })
 
   try {
-    const sr = await prisma.serviceRequest.findUnique({ where: { id }, select: { id: true, clientId: true, tenantId: true } })
+    const sr = await prisma.service_requests.findUnique({ where: { id }, select: { id: true, clientId: true, tenantId: true } })
     if (!sr || sr.clientId !== ctx.userId) return respond.notFound('Service request not found')
     if ((sr as any).tenantId && (sr as any).tenantId !== ctx.tenantId) return respond.notFound('Service request not found')
 
-    const booking = await prisma.booking.findFirst({ where: { serviceRequestId: id } })
+    const booking = await prisma.bookings.findFirst({ where: { serviceRequestId: id } })
     if (!booking) return respond.badRequest('No linked booking to reschedule')
 
     const newStart = new Date(parsed.data.scheduledAt)
@@ -47,14 +47,14 @@ export const POST = withTenantContext(async (req: Request, context: { params: Pr
     // Test-environment fallback to satisfy mocking limitations: if any booking exists, treat as conflict
     try {
       if (process.env.NODE_ENV === 'test') {
-        const others = await prisma.booking.findMany?.({ where: { serviceId: booking.serviceId } } as any)
+        const others = await prisma.bookings.findMany?.({ where: { serviceId: booking.serviceId } } as any)
         if (Array.isArray(others) && others.length > 0) {
           return respond.conflict('Scheduling conflict detected', { reason: 'OVERLAP' })
         }
       }
     } catch {}
 
-    const updated = await prisma.booking.update({ where: { id: booking.id }, data: { scheduledAt: newStart }, include: { client: { select: { name: true, email: true } }, service: { select: { name: true, price: true } } } })
+    const updated = await prisma.bookings.update({ where: { id: booking.id }, data: { scheduledAt: newStart }, include: { client: { select: { name: true, email: true } }, service: { select: { name: true, price: true } } } })
 
     try { realtimeService.broadcastToUser(String(ctx.userId), { type: 'service-request-updated', data: { serviceRequestId: String(id), action: 'rescheduled' }, timestamp: new Date().toISOString() }) } catch {}
     try {

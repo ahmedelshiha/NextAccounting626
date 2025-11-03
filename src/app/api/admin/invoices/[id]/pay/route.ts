@@ -17,14 +17,14 @@ export const POST = withTenantContext(async (_request: NextRequest, context: { p
     if (!hasDb) return NextResponse.json({ error: 'Database not configured' }, { status: 501 })
 
     const { id } = await context.params
-    const existing = await prisma.invoice.findFirst({ where: { id, ...tenantFilter(ctx.tenantId) } })
+    const existing = await prisma.invoices.findFirst({ where: { id, ...tenantFilter(ctx.tenantId) } })
     if (!existing) return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
 
     if ((existing as any).status === 'PAID') {
       return NextResponse.json({ message: 'Already paid', invoice: existing })
     }
 
-    const updated = await prisma.invoice.update({ where: { id }, data: { status: 'PAID' as any, paidAt: new Date() } })
+    const updated = await prisma.invoices.update({ where: { id }, data: { status: 'PAID' as any, paidAt: new Date() } })
     await logAudit({ action: 'invoice.pay', actorId: ctx.userId ?? null, targetId: id })
 
     return NextResponse.json({ message: 'Invoice marked as paid', invoice: updated })

@@ -134,8 +134,8 @@ export const GET = withTenantContext(async (request: NextRequest) => {
 
     // Execute queries in parallel
     const [total, users] = await Promise.all([
-      prisma.user.count({ where }),
-      prisma.user.findMany({
+      prisma.users.count({ where }),
+      prisma.users.findMany({
         where,
         select: {
           id: true,

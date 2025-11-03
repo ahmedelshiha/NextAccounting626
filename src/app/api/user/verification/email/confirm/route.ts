@@ -32,7 +32,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
       return NextResponse.json({ success: true, message: "Email verified" })
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: ctx.userId as string },
       select: { id: true, emailVerified: true },
     })
@@ -40,7 +40,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 })
 
     // Mark email as verified
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: user.id },
       data: { emailVerified: new Date() },
     })

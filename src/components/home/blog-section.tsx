@@ -23,7 +23,7 @@ export async function BlogSection() {
 
   if (hasDb) {
     try {
-      posts = (await prisma.post.findMany({
+      posts = (await prisma.posts.findMany({
         where: { published: true },
         include: { author: { select: { name: true, image: true } } },
         orderBy: [

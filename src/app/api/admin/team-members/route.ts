@@ -12,7 +12,7 @@ export const GET = withTenantContext(async () => {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const rows = await prisma.teamMember.findMany({
+    const rows = await prisma.team_members.findMany({
       orderBy: { name: 'asc' },
       include: { user: { select: { id: true, name: true, email: true, role: true } } },
     })
@@ -33,7 +33,7 @@ export const GET = withTenantContext(async () => {
 
     if (!teamMembers.length) {
       try {
-        const users = await prisma.user.findMany({
+        const users = await prisma.users.findMany({
           where: { role: { in: ['ADMIN', 'TEAM_MEMBER', 'TEAM_LEAD'] as any } },
           orderBy: { createdAt: 'desc' },
           select: { id: true, name: true, email: true, role: true },
@@ -96,7 +96,7 @@ export const POST = withTenantContext(async (req: Request) => {
       return NextResponse.json({ error: 'Department is required' }, { status: 400 })
     }
 
-    const created = await prisma.teamMember.create({
+    const created = await prisma.team_members.create({
       data: {
         name,
         email,

@@ -30,7 +30,7 @@ const _api_POST = async (req: NextRequest) => {
     const identifierPrefix = `${tenantId}:
 `
     // We stored identifier as `${tenantId}:${email}:password_reset` so we need to search by token then validate identifier startsWith tenantId
-    const vt = await prisma.verificationToken.findFirst({ where: { token: hashed } })
+    const vt = await prisma.verificationtokens.findFirst({ where: { token: hashed } })
     if (!vt || !vt.identifier.startsWith(identifierPrefix) || vt.expires < new Date()) {
       return NextResponse.json({ ok: false, error: 'Invalid or expired token' }, { status: 400 })
     }
@@ -38,17 +38,17 @@ const _api_POST = async (req: NextRequest) => {
     const parts = vt.identifier.split(':')
     const email = parts[1]
 
-    const user = await prisma.user.findUnique({ where: userByTenantEmail(tenantId, email), select: { id: true } })
+    const user = await prisma.users.findUnique({ where: userByTenantEmail(tenantId, email), select: { id: true } })
     if (!user) {
-      await prisma.verificationToken.delete({ where: { identifier_token: { identifier: vt.identifier, token: vt.token } } }).catch(() => {})
+      await prisma.verificationtokens.delete({ where: { identifier_token: { identifier: vt.identifier, token: vt.token } } }).catch(() => {})
       return NextResponse.json({ ok: false, error: 'Invalid token' }, { status: 400 })
     }
 
     const hashedPw = await bcrypt.hash(parse.data.password, 12)
 
     await prisma.$transaction(async (tx) => {
-      await tx.user.update({ where: { id: user.id }, data: { password: hashedPw, sessionVersion: { increment: 1 } } })
-      await tx.verificationToken.deleteMany({ where: { identifier: vt.identifier } })
+      await tx.users.update({ where: { id: user.id }, data: { password: hashedPw, sessionVersion: { increment: 1 } } })
+      await tx.verificationtokens.deleteMany({ where: { identifier: vt.identifier } })
     })
 
     return NextResponse.json({ ok: true })

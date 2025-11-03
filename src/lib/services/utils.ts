@@ -121,7 +121,7 @@ export async function validateSlugUniqueness(
   if (excludeServiceId) {
     where.id = { not: excludeServiceId }
   }
-  const existing = await prisma.service.findFirst({ where })
+  const existing = await prisma.services.findFirst({ where })
   if (existing) {
     throw new Error('A service with this slug already exists')
   }

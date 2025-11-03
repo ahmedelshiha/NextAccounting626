@@ -3,7 +3,7 @@ import { CronTelemetrySettings, CronTelemetrySettingsSchema } from '@/schemas/se
 
 export async function getCronTelemetrySettings(tenantId: string): Promise<CronTelemetrySettings> {
   try {
-    const setting = await prisma.cronTelemetrySettings.findFirst({
+    const setting = await prisma.cron_telemetry_settings.findFirst({
       where: { tenantId },
     })
 
@@ -40,12 +40,12 @@ export async function updateCronTelemetrySettings(
       throw new Error(`Invalid settings: ${parsed.error.message}`)
     }
 
-    const existing = await prisma.cronTelemetrySettings.findFirst({
+    const existing = await prisma.cron_telemetry_settings.findFirst({
       where: { tenantId },
     })
 
     if (existing) {
-      await prisma.cronTelemetrySettings.update({
+      await prisma.cron_telemetry_settings.update({
         where: { id: existing.id },
         data: {
           performance: parsed.data.performance as any,
@@ -56,7 +56,7 @@ export async function updateCronTelemetrySettings(
         },
       })
     } else {
-      await prisma.cronTelemetrySettings.create({
+      await prisma.cron_telemetry_settings.create({
         data: {
           tenantId,
           performance: parsed.data.performance as any,

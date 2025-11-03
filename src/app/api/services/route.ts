@@ -63,7 +63,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
     }
 
     // Add a timeout guard to avoid hanging requests when DB is cold or unreachable
-    const findPromise = prisma.service.findMany({
+    const findPromise = prisma.services.findMany({
       where,
       orderBy: [
         { featured: 'desc' },
@@ -71,7 +71,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
       ]
     })
 
-    const services = await Promise.race<Awaited<ReturnType<typeof prisma.service.findMany>>>([
+    const services = await Promise.race<Awaited<ReturnType<typeof prisma.services.findMany>>>([
       findPromise,
       new Promise((_, reject) => setTimeout(() => reject(new Error('Service query timeout')), Math.max(250, timeoutMs))) as Promise<never>,
     ]).catch(() => null as any)

@@ -15,7 +15,7 @@ export const GET = withTenantContext(async () => {
 
     const tenantId = ctx.tenantId as string
 
-    const integration = await prisma.crowdinIntegration.findUnique({
+    const integration = await prisma.crowdin_integrations.findUnique({
       where: { tenantId },
     })
 
@@ -69,7 +69,7 @@ export const POST = withTenantContext(async (req: Request) => {
       return Response.json({ error: 'Project ID and API token are required' }, { status: 400 })
     }
 
-    const integration = await prisma.crowdinIntegration.upsert({
+    const integration = await prisma.crowdin_integrations.upsert({
       where: { tenantId },
       create: {
         tenantId,

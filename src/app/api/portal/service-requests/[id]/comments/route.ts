@@ -19,7 +19,7 @@ export const GET = withTenantContext(async (req: NextRequest, context: { params:
   const ctx = requireTenantContext()
 
   try {
-    const reqRow = await prisma.serviceRequest.findUnique({ where: { id }, select: { clientId: true, tenantId: true } })
+    const reqRow = await prisma.service_requests.findUnique({ where: { id }, select: { clientId: true, tenantId: true } })
     if (!reqRow || reqRow.clientId !== ctx.userId) {
       return respond.notFound('Service request not found')
     }
@@ -27,7 +27,7 @@ export const GET = withTenantContext(async (req: NextRequest, context: { params:
       return respond.notFound('Service request not found')
     }
 
-    const comments = await prisma.serviceRequestComment.findMany({
+    const comments = await prisma.service_request_comments.findMany({
       where: { serviceRequestId: id },
       orderBy: { createdAt: 'asc' },
       include: { author: { select: { id: true, name: true, email: true } } },
@@ -55,7 +55,7 @@ export const POST = withTenantContext(async (req: NextRequest, context: { params
   const { id } = await context.params
   const ctx = requireTenantContext()
 
-  const reqRow = await prisma.serviceRequest.findUnique({ where: { id }, select: { clientId: true, tenantId: true } })
+  const reqRow = await prisma.service_requests.findUnique({ where: { id }, select: { clientId: true, tenantId: true } })
   if (!reqRow || reqRow.clientId !== ctx.userId) {
     return respond.notFound('Service request not found')
   }
@@ -77,7 +77,7 @@ export const POST = withTenantContext(async (req: NextRequest, context: { params
   }
 
   try {
-    const created = await prisma.serviceRequestComment.create({
+    const created = await prisma.service_request_comments.create({
       data: {
         serviceRequestId: id,
         authorId: String(ctx.userId),

@@ -104,7 +104,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
 
     const orderBy: Prisma.ExpenseOrderByWithRelationInput = { [sortBy]: sortOrder } as Prisma.ExpenseOrderByWithRelationInput
 
-    const expenses = await prisma.expense.findMany({
+    const expenses = await prisma.expenses.findMany({
       where,
       include: {
         attachment: { select: { id: true, url: true, avStatus: true } },
@@ -114,7 +114,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
       skip,
       take: limit,
     })
-    const total = await prisma.expense.count({ where })
+    const total = await prisma.expenses.count({ where })
 
     return NextResponse.json({ expenses, total, page, limit })
   } catch (error) {
@@ -150,7 +150,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
       return NextResponse.json({ error: 'Invalid date' }, { status: 400 })
     }
 
-    const expense = await prisma.expense.create({
+    const expense = await prisma.expenses.create({
       data: {
         vendor,
         category: category || 'general',
@@ -200,7 +200,7 @@ export const DELETE = withTenantContext(async (request: NextRequest) => {
       Object.assign(where, getTenantFilter())
     }
 
-    const result = await prisma.expense.deleteMany({ where })
+    const result = await prisma.expenses.deleteMany({ where })
     return NextResponse.json({ message: `Deleted ${result.count} expenses`, deleted: result.count })
   } catch (error) {
     console.error('Error deleting expenses:', error)

@@ -37,7 +37,7 @@ export const GET = withTenantContext(async (_req: Request, context: { params: Pr
   if (!ctx.userId || !hasPermission(role, PERMISSIONS.TASKS_READ_ALL)) return respond.unauthorized()
 
   if (hasDb) {
-    const sr = await prisma.serviceRequest.findFirst({ where: { id, ...getTenantFilter() } })
+    const sr = await prisma.service_requests.findFirst({ where: { id, ...getTenantFilter() } })
     if (!sr) return respond.notFound('Service request not found')
   }
 
@@ -46,7 +46,7 @@ export const GET = withTenantContext(async (_req: Request, context: { params: Pr
     return respond.ok(rows)
   }
 
-  const relations = await prisma.requestTask.findMany({
+  const relations = await prisma.request_tasks.findMany({
     where: { serviceRequestId: id },
     include: {
       task: { include: { assignee: { select: { id: true, name: true, email: true } } } },
@@ -79,9 +79,9 @@ export const POST = withTenantContext(async (req: Request, context: { params: Pr
   const priority = mapPriority(parsed.data.priority as any)
   const dueIso = parsed.data.dueAt || (parsed.data.dueDate ? new Date(parsed.data.dueDate).toISOString() : undefined)
 
-  let serviceRequest: Awaited<ReturnType<typeof prisma.serviceRequest.findFirst>> | null = null
+  let serviceRequest: Awaited<ReturnType<typeof prisma.service_requests.findFirst>> | null = null
   if (hasDb) {
-    serviceRequest = await prisma.serviceRequest.findFirst({ where: { id, ...getTenantFilter() } })
+    serviceRequest = await prisma.service_requests.findFirst({ where: { id, ...getTenantFilter() } })
     if (!serviceRequest) return respond.notFound('Service request not found')
   }
 
@@ -124,12 +124,12 @@ export const POST = withTenantContext(async (req: Request, context: { params: Pr
     include: { assignee: { select: { id: true, name: true, email: true } } },
   })
 
-  await prisma.requestTask.create({ data: { serviceRequestId: id, taskId: createdTask.id } })
+  await prisma.request_tasks.create({ data: { serviceRequestId: id, taskId: createdTask.id } })
 
   try { realtimeService.emitTaskUpdate(createdTask.id, { action: 'created', serviceRequestId: id }) } catch {}
   try { realtimeService.emitServiceRequestUpdate(id, { action: 'task-created', taskId: createdTask.id }) } catch {}
   try {
-    const srClientId = serviceRequest?.clientId ?? (await prisma.serviceRequest.findUnique({ where: { id }, select: { clientId: true } }))?.clientId
+    const srClientId = serviceRequest?.clientId ?? (await prisma.service_requests.findUnique({ where: { id }, select: { clientId: true } }))?.clientId
     if (srClientId) {
       const ts = new Date().toISOString()
       realtimeService.broadcastToUser(String(srClientId), { type: 'task-updated', data: { taskId: createdTask.id, serviceRequestId: id, action: 'created' }, timestamp: ts })

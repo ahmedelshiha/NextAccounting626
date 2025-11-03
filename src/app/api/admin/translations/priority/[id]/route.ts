@@ -17,7 +17,7 @@ export const PUT = withTenantContext(async (request, context) => {
     const body = await request.json()
     const { priority, status, dueDate, assignedToUserId, notes } = body || {}
 
-    const updated = await prisma.translationPriority.updateMany({
+    const updated = await prisma.translation_priorities.updateMany({
       where: { id, tenantId: ctx.tenantId },
       data: {
         priority: priority || undefined,
@@ -32,7 +32,7 @@ export const PUT = withTenantContext(async (request, context) => {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
-    const record = await prisma.translationPriority.findUnique({ where: { id } })
+    const record = await prisma.translation_priorities.findUnique({ where: { id } })
     return NextResponse.json({ success: true, data: record })
   } catch (error: any) {
     console.error('[priority][PUT] Error:', error)
@@ -50,7 +50,7 @@ export const DELETE = withTenantContext(async (request, context) => {
     const { id } = (context?.params || {}) as any
     if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
 
-    await prisma.translationPriority.deleteMany({ where: { id, tenantId: ctx.tenantId } })
+    await prisma.translation_priorities.deleteMany({ where: { id, tenantId: ctx.tenantId } })
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

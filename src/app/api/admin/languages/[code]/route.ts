@@ -16,7 +16,7 @@ export const PUT = withTenantContext(async (req: Request, { params }: { params: 
     const body = await req.json()
     const { name, nativeName, direction, flag, bcp47Locale, enabled } = body
 
-    const language = await prisma.language.update({
+    const language = await prisma.languages.update({
       where: { code },
       data: {
         ...(name && { name }),
@@ -51,7 +51,7 @@ export const DELETE = withTenantContext(async (req: Request, { params }: { param
       return Response.json({ error: 'Cannot delete the default language (en)' }, { status: 400 })
     }
 
-    await prisma.language.delete({ where: { code } })
+    await prisma.languages.delete({ where: { code } })
 
     return Response.json({ success: true })
   } catch (error: any) {

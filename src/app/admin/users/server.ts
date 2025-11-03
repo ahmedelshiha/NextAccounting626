@@ -48,8 +48,8 @@ export async function fetchUsersServerSide(
 
     // Fetch users with timeout protection
     const [total, users] = await Promise.all([
-      prisma.user.count({ where: tenantFilter(tenantId) }),
-      prisma.user.findMany({
+      prisma.users.count({ where: tenantFilter(tenantId) }),
+      prisma.users.findMany({
         where: tenantFilter(tenantId),
         select: {
           id: true,
@@ -130,20 +130,20 @@ export async function fetchStatsServerSide(tenantId: string): Promise<UserStats>
 
     // Fetch all required stats in parallel
     const [total, active, admins, staffCount, clientCount, newThisMonth, newLastMonth] = await Promise.all([
-      prisma.user.count({ where: tenantFilter(tenantId) }),
-      prisma.user.count({
+      prisma.users.count({ where: tenantFilter(tenantId) }),
+      prisma.users.count({
         where: { ...tenantFilter(tenantId), availabilityStatus: AvailabilityStatus.AVAILABLE }
       }),
-      prisma.user.count({
+      prisma.users.count({
         where: { ...tenantFilter(tenantId), role: 'ADMIN' }
       }),
-      prisma.user.count({
+      prisma.users.count({
         where: { ...tenantFilter(tenantId), role: 'STAFF' }
       }),
-      prisma.user.count({
+      prisma.users.count({
         where: { ...tenantFilter(tenantId), role: 'CLIENT' }
       }),
-      prisma.user.count({
+      prisma.users.count({
         where: {
           ...tenantFilter(tenantId),
           createdAt: {
@@ -152,7 +152,7 @@ export async function fetchStatsServerSide(tenantId: string): Promise<UserStats>
           }
         }
       }),
-      prisma.user.count({
+      prisma.users.count({
         where: {
           ...tenantFilter(tenantId),
           createdAt: {
@@ -209,7 +209,7 @@ export async function fetchUserActivityServerSide(userId: string, tenantId: stri
     }
 
     // Fetch audit logs related to this user
-    const activityLogs = await prisma.auditLog.findMany({
+    const activityLogs = await prisma.audit_logs.findMany({
       where: {
         tenantId,
         OR: [

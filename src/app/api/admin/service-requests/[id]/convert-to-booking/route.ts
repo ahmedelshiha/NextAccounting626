@@ -21,7 +21,7 @@ export const POST = withTenantContext(async (request: NextRequest, context: { pa
     }
 
     // Get the service request with all related data, tenant-scoped
-    const serviceRequest = await prisma.serviceRequest.findFirst({
+    const serviceRequest = await prisma.service_requests.findFirst({
       where: { id, ...getTenantFilter() },
       include: {
         client: { select: { id: true, name: true, email: true } },
@@ -94,7 +94,7 @@ export const POST = withTenantContext(async (request: NextRequest, context: { pa
       bookingData.tenant = { connect: { id: ctx.tenantId } }
     }
 
-    const booking = await prisma.booking.create({
+    const booking = await prisma.bookings.create({
       data: bookingData,
       include: {
         client: { select: { id: true, name: true, email: true } },
@@ -103,7 +103,7 @@ export const POST = withTenantContext(async (request: NextRequest, context: { pa
       },
     })
 
-    await prisma.serviceRequest.update({
+    await prisma.service_requests.update({
       where: { id },
       data: {
         status: 'COMPLETED' as any,
@@ -115,7 +115,7 @@ export const POST = withTenantContext(async (request: NextRequest, context: { pa
     })
 
     try {
-      await prisma.serviceRequestComment.create({
+      await prisma.service_request_comments.create({
         data: {
           serviceRequestId: id,
           authorId: ctx.userId ?? null,

@@ -32,7 +32,7 @@ export const GET = withTenantContext(async (_req: NextRequest, context: { params
   }
 
   try {
-    const item = await prisma.serviceRequest.findFirst({
+    const item = await prisma.service_requests.findFirst({
       where: { id, ...getTenantFilter() },
       include: {
         client: { select: { id: true, name: true, email: true } },
@@ -84,7 +84,7 @@ export const PATCH = withTenantContext(async (req: NextRequest, context: { param
     }
   }
   // First ensure the service request exists and belongs to the current tenant
-  const sr = await prisma.serviceRequest.findFirst({ where: { id, ...getTenantFilter() }, select: { clientId: true } })
+  const sr = await prisma.service_requests.findFirst({ where: { id, ...getTenantFilter() }, select: { clientId: true } })
   if (!sr) return respond.notFound('Service request not found')
 
   // Parse and validate payload after tenant ownership check
@@ -99,7 +99,7 @@ export const PATCH = withTenantContext(async (req: NextRequest, context: { param
     updates.deadline = parsed.data.deadline ? new Date(parsed.data.deadline as any) : null
   }
 
-  const updated = await prisma.serviceRequest.update({ where: { id }, data: updates })
+  const updated = await prisma.service_requests.update({ where: { id }, data: updates })
   try { realtimeService.emitServiceRequestUpdate(updated.id, { action: 'updated' }) } catch {}
   try { if (sr?.clientId) realtimeService.broadcastToUser(String(sr.clientId), { type: 'service-request-updated', data: { serviceRequestId: updated.id, action: 'updated' }, timestamp: new Date().toISOString() }) } catch {}
   try { await logAudit({ action: 'service-request:update', actorId: ctx.userId ?? null, targetId: id, details: { updates } }) } catch {}
@@ -123,10 +123,10 @@ export const DELETE = withTenantContext(async (_req: NextRequest, context: { par
       return respond.tooMany()
     }
   }
-  const sr = await prisma.serviceRequest.findFirst({ where: { id, ...getTenantFilter() }, select: { clientId: true } })
+  const sr = await prisma.service_requests.findFirst({ where: { id, ...getTenantFilter() }, select: { clientId: true } })
   if (!sr) return respond.notFound('Service request not found')
-  await prisma.requestTask.deleteMany({ where: { serviceRequestId: id } })
-  await prisma.serviceRequest.delete({ where: { id } })
+  await prisma.request_tasks.deleteMany({ where: { serviceRequestId: id } })
+  await prisma.service_requests.delete({ where: { id } })
   try { realtimeService.emitServiceRequestUpdate(id, { action: 'deleted' }) } catch {}
   try { if (sr?.clientId) realtimeService.broadcastToUser(String(sr.clientId), { type: 'service-request-updated', data: { serviceRequestId: id, action: 'deleted' }, timestamp: new Date().toISOString() }) } catch {}
   try { await logAudit({ action: 'service-request:delete', actorId: ctx.userId ?? null, targetId: id }) } catch {}

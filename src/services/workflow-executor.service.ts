@@ -15,21 +15,21 @@ export interface WorkflowProgress {
 export class WorkflowExecutorService {
   async executeWorkflow(workflowId: string): Promise<WorkflowProgress> {
     try {
-      const wf = await prisma.userWorkflow.update({
+      const wf = await prisma.user_workflows.update({
         where: { id: workflowId },
         data: { status: 'IN_PROGRESS', startedAt: new Date() }
       })
-      const steps = await prisma.workflowStep.findMany({ where: { workflowId }, orderBy: { stepNumber: 'asc' } })
+      const steps = await prisma.workflow_steps.findMany({ where: { workflowId }, orderBy: { stepNumber: 'asc' } })
       let completed = 0
       for (const step of steps) {
-        await prisma.workflowStep.update({ where: { id: step.id }, data: { status: 'IN_PROGRESS', startedAt: new Date() } })
+        await prisma.workflow_steps.update({ where: { id: step.id }, data: { status: 'IN_PROGRESS', startedAt: new Date() } })
         // Simulate execution; real handlers implemented in step modules (Phase 4c+)
-        await prisma.workflowStep.update({ where: { id: step.id }, data: { status: 'COMPLETED', completedAt: new Date() } })
+        await prisma.workflow_steps.update({ where: { id: step.id }, data: { status: 'COMPLETED', completedAt: new Date() } })
         completed++
         const progress = Math.round((completed / steps.length) * 100)
-        await prisma.userWorkflow.update({ where: { id: workflowId }, data: { completedSteps: completed, progressPercent: progress } })
+        await prisma.user_workflows.update({ where: { id: workflowId }, data: { completedSteps: completed, progressPercent: progress } })
       }
-      const finalWf = await prisma.userWorkflow.update({
+      const finalWf = await prisma.user_workflows.update({
         where: { id: workflowId },
         data: { status: 'COMPLETED', completedAt: new Date() }
       })
@@ -48,8 +48,8 @@ export class WorkflowExecutorService {
 
   async executeStep(stepId: string): Promise<StepStatus> {
     try {
-      await prisma.workflowStep.update({ where: { id: stepId }, data: { status: 'IN_PROGRESS', startedAt: new Date() } })
-      await prisma.workflowStep.update({ where: { id: stepId }, data: { status: 'COMPLETED', completedAt: new Date() } })
+      await prisma.workflow_steps.update({ where: { id: stepId }, data: { status: 'IN_PROGRESS', startedAt: new Date() } })
+      await prisma.workflow_steps.update({ where: { id: stepId }, data: { status: 'COMPLETED', completedAt: new Date() } })
       return 'COMPLETED'
     } catch {
       return 'FAILED'
@@ -58,7 +58,7 @@ export class WorkflowExecutorService {
 
   async approveStep(stepId: string, approverUserId: string): Promise<StepStatus> {
     try {
-      const step = await prisma.workflowStep.update({
+      const step = await prisma.workflow_steps.update({
         where: { id: stepId },
         data: { approvedAt: new Date(), approvedBy: approverUserId }
       })
@@ -70,7 +70,7 @@ export class WorkflowExecutorService {
 
   async pauseWorkflow(workflowId: string): Promise<WorkflowStatus> {
     try {
-      const wf = await prisma.userWorkflow.update({ where: { id: workflowId }, data: { status: 'PAUSED' } })
+      const wf = await prisma.user_workflows.update({ where: { id: workflowId }, data: { status: 'PAUSED' } })
       return wf.status as WorkflowStatus
     } catch {
       return 'FAILED'
@@ -79,7 +79,7 @@ export class WorkflowExecutorService {
 
   async resumeWorkflow(workflowId: string): Promise<WorkflowStatus> {
     try {
-      const wf = await prisma.userWorkflow.update({ where: { id: workflowId }, data: { status: 'IN_PROGRESS' } })
+      const wf = await prisma.user_workflows.update({ where: { id: workflowId }, data: { status: 'IN_PROGRESS' } })
       return wf.status as WorkflowStatus
     } catch {
       return 'FAILED'
@@ -88,7 +88,7 @@ export class WorkflowExecutorService {
 
   async cancelWorkflow(workflowId: string): Promise<WorkflowStatus> {
     try {
-      const wf = await prisma.userWorkflow.update({ where: { id: workflowId }, data: { status: 'CANCELLED' } })
+      const wf = await prisma.user_workflows.update({ where: { id: workflowId }, data: { status: 'CANCELLED' } })
       return wf.status as WorkflowStatus
     } catch {
       return 'FAILED'
@@ -97,7 +97,7 @@ export class WorkflowExecutorService {
 
   async getWorkflowProgress(workflowId: string): Promise<WorkflowProgress | null> {
     try {
-      const wf = await prisma.userWorkflow.findUnique({ where: { id: workflowId } })
+      const wf = await prisma.user_workflows.findUnique({ where: { id: workflowId } })
       if (!wf) return null
       return {
         workflowId,

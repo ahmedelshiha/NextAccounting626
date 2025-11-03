@@ -24,7 +24,7 @@ export const GET = withTenantContext(async (request: Request) => {
     }
 
     // For portal users, only show their own bookings
-    const bookings = await prisma.booking.findMany({
+    const bookings = await prisma.bookings.findMany({
       where: {
         ...(tenantId ? { tenantId } : {}),
         clientId: userId  // Using clientId instead of userId
@@ -98,7 +98,7 @@ export const POST = withTenantContext(async (req: Request) => {
     }
 
     // Check if service exists
-    const service = await prisma.service.findFirst({
+    const service = await prisma.services.findFirst({
       where: {
         id: serviceId,
         ...(tenantId ? { tenantId } : {})
@@ -110,7 +110,7 @@ export const POST = withTenantContext(async (req: Request) => {
     }
 
     // Get user's name and email for booking
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
       select: { name: true, email: true }
     })
@@ -141,7 +141,7 @@ export const POST = withTenantContext(async (req: Request) => {
       createPayload.tenant = { connect: { id: String(tenantId) } }
     }
 
-    const booking = await prisma.booking.create({
+    const booking = await prisma.bookings.create({
       data: createPayload,
       include: {
         service: {

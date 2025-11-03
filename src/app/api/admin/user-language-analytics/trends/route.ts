@@ -25,7 +25,7 @@ export const GET = withTenantContext(async (req: Request) => {
     since.setDate(since.getDate() - days)
     since.setUTCHours(0, 0, 0, 0)
 
-    const metrics = await prisma.translationMetrics.findMany({
+    const metrics = await prisma.translation_metrics.findMany({
       where: { tenantId, date: { gte: since } },
       orderBy: { date: 'asc' },
       select: {

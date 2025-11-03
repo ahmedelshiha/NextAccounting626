@@ -26,7 +26,7 @@ export const GET = withTenantContext(async (req: NextRequest, context: { params:
       const sUserId = ctx.userId ?? ''
       user = { id: String(sUserId), role: ctx.role ?? 'CLIENT', name: ctx.userName ?? null, email: ctx.userEmail ?? null }
     } else {
-      const dbUser = await prisma.user.findUnique({ where: { id: BigInt(idStr) } as any, select: { id: true, role: true, name: true, email: true } })
+      const dbUser = await prisma.users.findUnique({ where: { id: BigInt(idStr) } as any, select: { id: true, role: true, name: true, email: true } })
       if (!dbUser) return NextResponse.json({ error: 'User not found' }, { status: 404 })
       user = { ...dbUser, id: dbUser.id.toString() }
     }

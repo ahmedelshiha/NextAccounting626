@@ -40,7 +40,7 @@ export const GET = withTenantContext(async (request?: Request) => {
   if (hasDb) {
     try {
       const tenantId = ctx.tenantId
-      const row = await prisma.notificationSettings.findFirst({ where: tenantFilter(tenantId) })
+      const row = await prisma.notification_settings.findFirst({ where: tenantFilter(tenantId) })
       if (row) {
         return NextResponse.json({
           emailEnabled: row.emailEnabled,
@@ -70,7 +70,7 @@ export const PATCH = withTenantContext(async (request: Request) => {
     if (hasDb) {
       try {
         const tenantId = ctx.tenantId
-        const existing = await prisma.notificationSettings.findFirst({ where: tenantFilter(tenantId) })
+        const existing = await prisma.notification_settings.findFirst({ where: tenantFilter(tenantId) })
         const payload = {
           emailEnabled: !!body.emailEnabled,
           emailFrom: body.emailFrom ?? existing?.emailFrom ?? '',
@@ -79,8 +79,8 @@ export const PATCH = withTenantContext(async (request: Request) => {
           ...(isMultiTenancyEnabled() && tenantId ? { tenantId } : {})
         } as any
         const row = existing
-          ? await prisma.notificationSettings.update({ where: { id: existing.id }, data: payload })
-          : await prisma.notificationSettings.create({ data: payload })
+          ? await prisma.notification_settings.update({ where: { id: existing.id }, data: payload })
+          : await prisma.notification_settings.create({ data: payload })
         return NextResponse.json({
           emailEnabled: row.emailEnabled,
           emailFrom: row.emailFrom || '',

@@ -16,7 +16,7 @@ export const GET = withTenantContext(async (request: NextRequest, context: { par
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const booking = await prisma.booking.findUnique({
+    const booking = await prisma.bookings.findUnique({
       where: { id },
       include: {
         client: { select: { id: true, name: true, email: true, _count: { select: { bookings: true } } } },
@@ -64,7 +64,7 @@ export const PUT = withTenantContext(async (request: NextRequest, context: { par
     const body = await request.json()
     const { status, scheduledAt, notes, adminNotes, confirmed, assignedTeamMemberId, serviceRequestId } = body
 
-    const existingBooking = await prisma.booking.findUnique({ where: { id } })
+    const existingBooking = await prisma.bookings.findUnique({ where: { id } })
     if (!existingBooking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
 
     const isOwner = existingBooking.clientId === ctx.userId
@@ -101,7 +101,7 @@ export const PUT = withTenantContext(async (request: NextRequest, context: { par
       }
     }
 
-    const booking = await prisma.booking.update({ where: { id }, data: updateData, include: { client: { select: { id: true, name: true, email: true, _count: { select: { bookings: true } } } }, service: { select: { id: true, name: true, slug: true, duration: true, price: true } }, assignedTeamMember: { select: { id: true, name: true, email: true } } } })
+    const booking = await prisma.bookings.update({ where: { id }, data: updateData, include: { client: { select: { id: true, name: true, email: true, _count: { select: { bookings: true } } } }, service: { select: { id: true, name: true, slug: true, duration: true, price: true } }, assignedTeamMember: { select: { id: true, name: true, email: true } } } })
 
     return NextResponse.json(booking)
   } catch (error) {
@@ -117,7 +117,7 @@ export const DELETE = withTenantContext(async (request: NextRequest, context: { 
     const ctx = requireTenantContext()
     if (!ctx.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const booking = await prisma.booking.findUnique({ where: { id }, include: { service: { select: { tenantId: true } } } })
+    const booking = await prisma.bookings.findUnique({ where: { id }, include: { service: { select: { tenantId: true } } } })
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
 
     if (isMultiTenancyEnabled() && ctx.tenantId) {
@@ -132,7 +132,7 @@ export const DELETE = withTenantContext(async (request: NextRequest, context: { 
 
     if (!isOwner && !isAdminOrStaff) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-    await prisma.booking.update({ where: { id }, data: { status: 'CANCELLED' } })
+    await prisma.bookings.update({ where: { id }, data: { status: 'CANCELLED' } })
 
     return NextResponse.json({ message: 'Booking cancelled successfully' })
   } catch (error) {

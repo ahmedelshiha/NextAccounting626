@@ -16,7 +16,7 @@ export const GET = withTenantContext(async () => {
       return NextResponse.json({ error: 'Tenant context missing' }, { status: 400 })
     }
 
-    const clients = await prisma.user.findMany({
+    const clients = await prisma.users.findMany({
       where: {
         role: 'CLIENT',
         tenantId: ctx.tenantId,
@@ -58,7 +58,7 @@ export const POST = withTenantContext(async (req: Request) => {
     }
 
     // Check if email already exists
-    const existing = await prisma.user.findUnique({
+    const existing = await prisma.users.findUnique({
       where: { tenantId_email: { tenantId: ctx.tenantId, email } },
     })
 
@@ -66,7 +66,7 @@ export const POST = withTenantContext(async (req: Request) => {
       return NextResponse.json({ error: 'Email already exists' }, { status: 409 })
     }
 
-    const client = await prisma.user.create({
+    const client = await prisma.users.create({
       data: {
         name,
         email,

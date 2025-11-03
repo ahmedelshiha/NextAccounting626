@@ -8,7 +8,7 @@ export const GET = withTenantContext(async () => {
   if (!ctx.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const tenantId = ctx.tenantId
   if (!tenantId) return NextResponse.json({ error: 'Tenant context missing' }, { status: 400 })
-  const data = await prisma.favoriteSetting.findMany({
+  const data = await prisma.favorite_settings.findMany({
     where: { tenantId, userId: String(ctx.userId) },
     orderBy: { createdAt: 'desc' },
   })
@@ -23,7 +23,7 @@ export const POST = withTenantContext(async (req: Request) => {
   const body = await req.json()
   const { settingKey, route, label } = body || {}
   if (!settingKey || !route || !label) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
-  const item = await prisma.favoriteSetting.upsert({
+  const item = await prisma.favorite_settings.upsert({
     where: { tenantId_userId_settingKey: { tenantId, userId: String(ctx.userId), settingKey } },
     update: { route, label },
     create: { tenantId, userId: String(ctx.userId), settingKey, route, label },
@@ -39,7 +39,7 @@ export const DELETE = withTenantContext(async (req: Request) => {
   const { searchParams } = new URL(req.url)
   const settingKey = searchParams.get('settingKey')
   if (!settingKey) return NextResponse.json({ error: 'Missing settingKey' }, { status: 400 })
-  await prisma.favoriteSetting.delete({
+  await prisma.favorite_settings.delete({
     where: { tenantId_userId_settingKey: { tenantId, userId: String(ctx.userId), settingKey } },
   })
   return NextResponse.json({ ok: true })

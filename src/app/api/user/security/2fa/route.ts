@@ -34,7 +34,7 @@ export const POST = withTenantContext(async (request: Request) => {
       await clearUserMfa(String(ctx.userId))
     } catch (e) {}
 
-    await prisma.userProfile.upsert({
+    await prisma.user_profiles.upsert({
       where: { userId: String(ctx.userId) },
       create: { userId: String(ctx.userId), twoFactorEnabled: false },
       update: { twoFactorEnabled: false },

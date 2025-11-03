@@ -64,7 +64,7 @@ export const POST = withTenantContext(async (req: Request) => {
               return a
             })
             if (modified) {
-              await prisma.serviceRequest.update({ where: { id: row.id }, data: { attachments: updated } })
+              await prisma.service_requests.update({ where: { id: row.id }, data: { attachments: updated } })
               try { await logAuditSafe({ action: 'upload:av_update', details: { key, serviceRequestId: row.id, avStatus: clean ? 'clean' : 'infected' } }) } catch {}
             }
           } catch (e) {

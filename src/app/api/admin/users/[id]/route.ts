@@ -27,7 +27,7 @@ export const PATCH = withTenantContext(async (request: NextRequest, context: { p
     const { id } = await context.params
 
     const tenantId = ctx.tenantId
-    const existing = await prisma.user.findFirst({ where: { id, ...(tenantFilter(tenantId) as any) }, select: { id: true } })
+    const existing = await prisma.users.findFirst({ where: { id, ...(tenantFilter(tenantId) as any) }, select: { id: true } })
     if (!existing) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
@@ -54,12 +54,12 @@ export const PATCH = withTenantContext(async (request: NextRequest, context: { p
     if (parsed.data.email !== undefined) data.email = parsed.data.email
     if (parsed.data.role !== undefined) data.role = parsed.data.role as import('@prisma/client').UserRole
 
-    const oldUser = await prisma.user.findUnique({
+    const oldUser = await prisma.users.findUnique({
       where: { id },
       select: { role: true, name: true, email: true }
     })
 
-    const updated = await prisma.user.update({
+    const updated = await prisma.users.update({
       where: { id },
       data,
       select: { id: true, name: true, email: true, role: true, createdAt: true }

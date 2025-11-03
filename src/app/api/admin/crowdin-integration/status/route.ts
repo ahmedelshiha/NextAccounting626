@@ -13,7 +13,7 @@ export const GET = withTenantContext(async () => {
     }
 
     const tenantId = ctx.tenantId as string
-    const integration = await prisma.crowdinIntegration.findUnique({ where: { tenantId } })
+    const integration = await prisma.crowdin_integrations.findUnique({ where: { tenantId } })
 
     if (!integration) {
       return Response.json({

@@ -21,12 +21,12 @@ export abstract class BaseStepHandler {
 
   async execute(context: WorkflowContext): Promise<StepHandlerResult> {
     try {
-      const step = await prisma.workflowStep.findUnique({ where: { id: context.stepId } })
+      const step = await prisma.workflow_steps.findUnique({ where: { id: context.stepId } })
       if (!step) return { success: false, error: 'Step not found' }
 
       const result = await this.executeStep(context)
       if (result.success) {
-        await prisma.workflowStep.update({
+        await prisma.workflow_steps.update({
           where: { id: context.stepId },
           data: {
             status: 'COMPLETED',
@@ -35,7 +35,7 @@ export abstract class BaseStepHandler {
           }
         })
       } else {
-        await prisma.workflowStep.update({
+        await prisma.workflow_steps.update({
           where: { id: context.stepId },
           data: {
             status: 'FAILED',

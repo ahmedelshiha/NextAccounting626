@@ -18,7 +18,7 @@ export const GET = withTenantContext(async () => {
     return NextResponse.json({ data: [] })
   }
   try {
-    const members = await prisma.teamMember.findMany({ where: tenantFilter(ctx.tenantId), select: { id: true, name: true, specialties: true } })
+    const members = await prisma.team_members.findMany({ where: tenantFilter(ctx.tenantId), select: { id: true, name: true, specialties: true } })
     const set = new Set<string>()
     members.forEach(m => (m.specialties || []).forEach(s => set.add(String(s))))
     const skills = Array.from(set).sort()
@@ -42,7 +42,7 @@ export const PATCH = withTenantContext(async (request: Request) => {
     if (!body.memberId || !Array.isArray(body.specialties)) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
-    const updated = await prisma.teamMember.update({ where: { id: String(body.memberId), ...(tenantFilter(ctx.tenantId)) }, data: { specialties: body.specialties as any } })
+    const updated = await prisma.team_members.update({ where: { id: String(body.memberId), ...(tenantFilter(ctx.tenantId)) }, data: { specialties: body.specialties as any } })
     return NextResponse.json({ data: { id: updated.id, specialties: updated.specialties } })
   } catch (e) {
     console.error('Skills update error', e)

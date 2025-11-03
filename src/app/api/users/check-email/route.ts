@@ -16,7 +16,7 @@ const _api_GET = async (request: NextRequest) => {
     }
 
     const tenantId = await getResolvedTenantId(request)
-    const user = await prisma.user.findUnique({ where: userByTenantEmail(tenantId, email) })
+    const user = await prisma.users.findUnique({ where: userByTenantEmail(tenantId, email) })
     return NextResponse.json({ exists: !!user })
   } catch {
     return NextResponse.json({ exists: false })

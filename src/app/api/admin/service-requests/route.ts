@@ -144,7 +144,7 @@ export const GET = withTenantContext(async (request: Request) => {
 
   try {
     const [items, total] = await Promise.all([
-      prisma.serviceRequest.findMany({
+      prisma.service_requests.findMany({
         where,
         include: {
           client: { select: { id: true, name: true, email: true } },
@@ -155,7 +155,7 @@ export const GET = withTenantContext(async (request: Request) => {
         skip,
         take: filters.limit,
       }),
-      prisma.serviceRequest.count({ where }),
+      prisma.service_requests.count({ where }),
     ])
 
     return NextResponse.json({ success: true, data: items, pagination: { page: filters.page, limit: filters.limit, total, totalPages: Math.ceil(total / filters.limit) } }, { headers: { 'X-Total-Count': String(total) } })
@@ -187,7 +187,7 @@ export const GET = withTenantContext(async (request: Request) => {
       }
 
       const [items, total] = await Promise.all([
-        prisma.serviceRequest.findMany({
+        prisma.service_requests.findMany({
           where: whereLegacy,
           include: {
             client: { select: { id: true, name: true, email: true } },
@@ -198,7 +198,7 @@ export const GET = withTenantContext(async (request: Request) => {
           skip,
           take: filters.limit,
         }),
-        prisma.serviceRequest.count({ where: whereLegacy }),
+        prisma.service_requests.count({ where: whereLegacy }),
       ])
 
       return NextResponse.json({ success: true, data: items, pagination: { page: filters.page, limit: filters.limit, total, totalPages: Math.ceil(total / filters.limit) } }, { headers: { 'X-Total-Count': String(total) } })
@@ -298,8 +298,8 @@ export const POST = withTenantContext(async (request: Request) => {
   let titleToUse = data.title
   if (!titleToUse) {
     try {
-      const svc = await prisma.service.findUnique({ where: { id: data.serviceId } })
-      const client = await prisma.user.findUnique({ where: { id: data.clientId } })
+      const svc = await prisma.services.findUnique({ where: { id: data.serviceId } })
+      const client = await prisma.users.findUnique({ where: { id: data.clientId } })
       const clientName = client?.name || data.clientId
       const svcName = svc?.name || data.serviceId
       titleToUse = `${svcName} request — ${clientName} — ${new Date().toISOString().slice(0,10)}`
@@ -322,7 +322,7 @@ export const POST = withTenantContext(async (request: Request) => {
     if ((data as any).isBooking) {
       try {
         const { checkBookingConflict } = await import('@/lib/booking/conflict-detection')
-        const duration = (data as any).duration ?? (await prisma.service.findUnique({ where: { id: (data as any).serviceId } }))?.duration ?? 60
+        const duration = (data as any).duration ?? (await prisma.services.findUnique({ where: { id: (data as any).serviceId } }))?.duration ?? 60
         const conflict = await checkBookingConflict({
           serviceId: (data as any).serviceId,
           start: new Date((data as any).scheduledAt),
@@ -340,7 +340,7 @@ export const POST = withTenantContext(async (request: Request) => {
     // Recurring series creation: when bookingType is RECURRING and a recurringPattern is provided,
     // create a parent record and non-conflicting child appointments. Conflicts are skipped and logged as comments.
     if ((data as any).isBooking && String((data as any).bookingType) === 'RECURRING' && (data as any).recurringPattern) {
-      const svcDuration = (await prisma.service.findUnique({ where: { id: (data as any).serviceId } }))?.duration ?? 60
+      const svcDuration = (await prisma.services.findUnique({ where: { id: (data as any).serviceId } }))?.duration ?? 60
       const durationMinutes = Number((data as any).duration ?? svcDuration)
 
       const rp: any = (data as any).recurringPattern
@@ -363,7 +363,7 @@ export const POST = withTenantContext(async (request: Request) => {
       })
 
       // Create parent request capturing the pattern for auditability
-      const parent = await prisma.serviceRequest.create({
+      const parent = await prisma.service_requests.create({
         data: {
           client: { connect: { id: String((data as any).clientId) } },
           service: { connect: { id: String((data as any).serviceId) } },
@@ -397,7 +397,7 @@ export const POST = withTenantContext(async (request: Request) => {
           skipped.push(item)
           continue
         }
-        const child = await prisma.serviceRequest.create({
+        const child = await prisma.service_requests.create({
           data: {
             client: { connect: { id: String((data as any).clientId) } },
             service: { connect: { id: String((data as any).serviceId) } },
@@ -425,7 +425,7 @@ export const POST = withTenantContext(async (request: Request) => {
       // Log skipped occurrences as comments on the parent for operational visibility
       try {
         for (const s of skipped) {
-          await prisma.serviceRequestComment.create({
+          await prisma.service_request_comments.create({
             data: {
               serviceRequestId: parent.id,
               authorId: ctx.userId ?? null,
@@ -455,7 +455,7 @@ export const POST = withTenantContext(async (request: Request) => {
       return respond.created({ parent, childrenCreated, skipped })
     }
 
-    const created = await prisma.serviceRequest.create({
+    const created = await prisma.service_requests.create({
       data: {
         client: { connect: { id: String((data as any).clientId) } },
         service: { connect: { id: String((data as any).serviceId) } },

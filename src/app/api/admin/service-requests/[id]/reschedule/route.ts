@@ -24,7 +24,7 @@ export const POST = withTenantContext(async (req: NextRequest, context: { params
   if (!parsed.success) return respond.badRequest('Invalid payload', { issues: parsed.error.issues })
 
   try {
-    const booking = await prisma.booking.findFirst({
+    const booking = await prisma.bookings.findFirst({
       where: { serviceRequestId: id, ...getTenantFilter() },
       include: { client: { select: { name: true, email: true } }, service: { select: { name: true, price: true } } }
     })
@@ -48,14 +48,14 @@ export const POST = withTenantContext(async (req: NextRequest, context: { params
 
     try {
       if (process.env.NODE_ENV === 'test') {
-        const others = await prisma.booking.findMany?.({ where: { serviceId: booking.serviceId, ...getTenantFilter() } } as any)
+        const others = await prisma.bookings.findMany?.({ where: { serviceId: booking.serviceId, ...getTenantFilter() } } as any)
         if (Array.isArray(others) && others.length > 0) {
           return respond.conflict('Scheduling conflict detected', { reason: 'OVERLAP' })
         }
       }
     } catch {}
 
-    const updated = await prisma.booking.update({ where: { id: booking.id }, data: { scheduledAt: newStart }, include: { client: { select: { name: true, email: true } }, service: { select: { name: true, price: true } } } })
+    const updated = await prisma.bookings.update({ where: { id: booking.id }, data: { scheduledAt: newStart }, include: { client: { select: { name: true, email: true } }, service: { select: { name: true, price: true } } } })
 
     try { realtimeService.emitServiceRequestUpdate(String(id), { action: 'rescheduled' }) } catch {}
     try {

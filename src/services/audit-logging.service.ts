@@ -106,7 +106,7 @@ export class AuditLoggingService {
         changes: entry.changes,
       }
 
-      await prisma.auditLog.create({
+      await prisma.audit_logs.create({
         data: {
           action: entry.action,
           userId: entry.userId,
@@ -276,7 +276,7 @@ export class AuditLoggingService {
       }
     }
 
-    const logs = await prisma.auditLog.findMany({
+    const logs = await prisma.audit_logs.findMany({
       where,
       orderBy: { createdAt: 'desc' },
       take: filter.limit || 100,
@@ -305,7 +305,7 @@ export class AuditLoggingService {
       }
     }
 
-    const actionCounts = await prisma.auditLog.groupBy({
+    const actionCounts = await prisma.audit_logs.groupBy({
       by: ['action'],
       where,
       _count: true,
@@ -329,7 +329,7 @@ export class AuditLoggingService {
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - retentionDays)
 
-    const result = await prisma.auditLog.deleteMany({
+    const result = await prisma.audit_logs.deleteMany({
       where: {
         tenantId,
         createdAt: {

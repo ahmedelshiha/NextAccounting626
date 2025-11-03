@@ -36,7 +36,7 @@ export class AdvancedSearchService {
     const queryLower = query.toLowerCase()
 
     // Search users
-    const users = await prisma.user.findMany({
+    const users = await prisma.users.findMany({
       where: {
         OR: [
           { email: { contains: queryLower, mode: 'insensitive' } },
@@ -58,7 +58,7 @@ export class AdvancedSearchService {
     })
 
     // Search roles
-    const roles = await prisma.customRole.findMany({
+    const roles = await prisma.custom_roles.findMany({
       where: {
         OR: [
           { name: { contains: query, mode: 'insensitive' } },
@@ -112,7 +112,7 @@ export class AdvancedSearchService {
     })
 
     // Get entity suggestions
-    const users = await prisma.user.findMany({
+    const users = await prisma.users.findMany({
       where: {
         OR: [
           { email: { startsWith: query, mode: 'insensitive' } },
@@ -131,7 +131,7 @@ export class AdvancedSearchService {
       })
     })
 
-    const roles = await prisma.customRole.findMany({
+    const roles = await prisma.custom_roles.findMany({
       where: { name: { startsWith: query, mode: 'insensitive' } },
       take: 3,
       select: { name: true, id: true }
@@ -166,8 +166,8 @@ export class AdvancedSearchService {
    * Get search filters/facets
    */
   async getFilters(): Promise<Record<string, { count: number; values: string[] }>> {
-    const userCount = await prisma.user.count()
-    const roleCount = await prisma.customRole.count()
+    const userCount = await prisma.users.count()
+    const roleCount = await prisma.custom_roles.count()
 
     return {
       'Entity Type': {

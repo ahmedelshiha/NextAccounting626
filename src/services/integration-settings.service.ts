@@ -22,7 +22,7 @@ export class IntegrationSettingsService {
 
     const resolvedTenantId = await resolveTenantId(tenantId)
     const scope = tenantId ? tenantFilter(tenantId) : { tenantId: resolvedTenantId }
-    const row = await prisma.integrationSettings.findFirst({ where: scope }).catch(() => null as any)
+    const row = await prisma.integration_settings.findFirst({ where: scope }).catch(() => null as any)
     const value = row ?? await this.createDefault(resolvedTenantId)
     await this.cache.set(key, value, 60)
     return value
@@ -31,7 +31,7 @@ export class IntegrationSettingsService {
   async update(tenantId: string | null, payload: IntegrationHubSettings, actorId?: string | null){
     const resolvedTenantId = await resolveTenantId(tenantId)
     const scope = tenantId ? tenantFilter(tenantId) : { tenantId: resolvedTenantId }
-    const existing = await prisma.integrationSettings.findFirst({ where: scope }).catch(() => null as any)
+    const existing = await prisma.integration_settings.findFirst({ where: scope }).catch(() => null as any)
     const next: any = {
       tenantId: resolvedTenantId,
       payments: { ...(existing?.payments ?? {}), ...(payload.payments ? {
@@ -46,8 +46,8 @@ export class IntegrationSettingsService {
       storage: { ...(existing?.storage ?? {}), ...(payload.storage ?? {}) },
     }
     const saved = existing
-      ? await prisma.integrationSettings.update({ where: { id: existing.id }, data: next })
-      : await prisma.integrationSettings.create({ data: next })
+      ? await prisma.integration_settings.update({ where: { id: existing.id }, data: next })
+      : await prisma.integration_settings.create({ data: next })
     await this.cache.delete(this.cacheKey(tenantId))
     try {
       await logAudit({ action: 'integration-settings:update', actorId: actorId ?? null, details: { tenantId: resolvedTenantId, requestedTenantId: tenantId ?? null, sections: Object.keys(payload) } })
@@ -76,9 +76,9 @@ export class IntegrationSettingsService {
       storage: { provider: 'none' },
     }
     try {
-      return await prisma.integrationSettings.create({ data: defaults })
+      return await prisma.integration_settings.create({ data: defaults })
     } catch {
-      const existing = await prisma.integrationSettings.findFirst({ where: { tenantId: resolvedTenantId } }).catch(() => null as any)
+      const existing = await prisma.integration_settings.findFirst({ where: { tenantId: resolvedTenantId } }).catch(() => null as any)
       return existing ?? defaults
     }
   }

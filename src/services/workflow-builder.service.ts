@@ -14,14 +14,14 @@ export class WorkflowBuilderService {
     const { tenantId, userId, templateId, type = 'ONBOARDING', scheduledFor } = input
     try {
       const template = templateId
-        ? await prisma.workflowTemplate.findUnique({ where: { id: templateId } })
-        : await prisma.workflowTemplate.findFirst({ where: { tenantId, type } })
+        ? await prisma.workflow_templates.findUnique({ where: { id: templateId } })
+        : await prisma.workflow_templates.findFirst({ where: { tenantId, type } })
 
       const steps = template?.steps && Array.isArray(template.steps)
         ? (template.steps as any[])
         : this.getDefaultSteps(type)
 
-      const wf = await prisma.userWorkflow.create({
+      const wf = await prisma.user_workflows.create({
         data: {
           tenantId,
           userId,
@@ -35,7 +35,7 @@ export class WorkflowBuilderService {
 
       for (let i = 0; i < steps.length; i++) {
         const s = steps[i]
-        await prisma.workflowStep.create({
+        await prisma.workflow_steps.create({
           data: {
             workflowId: wf.id,
             stepNumber: i + 1,

@@ -32,12 +32,12 @@ export default async function BlogPage() {
   if (hasDb) {
     try {
       const [featured, recents] = await Promise.all([
-        prisma.post.findFirst({
+        prisma.posts.findFirst({
           where: { published: true, featured: true },
           include: { author: { select: { name: true, image: true } } },
           orderBy: { publishedAt: 'desc' },
         }),
-        prisma.post.findMany({
+        prisma.posts.findMany({
           where: { published: true },
           include: { author: { select: { name: true, image: true } } },
           orderBy: [{ featured: 'desc' }, { publishedAt: 'desc' }],

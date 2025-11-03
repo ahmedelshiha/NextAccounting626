@@ -16,13 +16,13 @@ export const POST = withTenantContext(async (_req: Request, context: { params: P
   }
 
   try {
-    const booking = await prisma.booking.findFirst({
+    const booking = await prisma.bookings.findFirst({
       where: { serviceRequestId: id, ...getTenantFilter() },
       include: { client: { select: { name: true, email: true } }, service: { select: { name: true, price: true } } }
     })
     if (!booking) return respond.badRequest('No linked booking to confirm')
 
-    const updated = await prisma.booking.update({ where: { id: booking.id }, data: { status: 'CONFIRMED', confirmed: true } as any, include: { client: { select: { name: true, email: true } }, service: { select: { name: true, price: true } } } })
+    const updated = await prisma.bookings.update({ where: { id: booking.id }, data: { status: 'CONFIRMED', confirmed: true } as any, include: { client: { select: { name: true, email: true } }, service: { select: { name: true, price: true } } } })
 
     try { realtimeService.emitServiceRequestUpdate(String(id), { action: 'confirmed' }) } catch {}
     try { await logAudit({ action: 'service-request:confirm', actorId: ctx.userId ?? null, targetId: String(id), details: { bookingId: booking.id } }) } catch {}

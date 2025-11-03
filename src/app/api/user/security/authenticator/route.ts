@@ -30,7 +30,7 @@ export const POST = withTenantContext(async (request: Request) => {
     const backupCodes = await generateBackupCodes(String(ctx.userId), 5)
 
     // Do not enable until verified; ensure profile row exists
-    await prisma.userProfile.upsert({ where: { userId: String(ctx.userId) }, create: { userId: String(ctx.userId), twoFactorEnabled: false }, update: {} })
+    await prisma.user_profiles.upsert({ where: { userId: String(ctx.userId) }, create: { userId: String(ctx.userId), twoFactorEnabled: false }, update: {} })
 
     try { await logAudit({ action: 'mfa.enroll', actorId: String(ctx.userId), targetId: String(ctx.userId), details: { methods: ['totp'], codes: backupCodes.length } }) } catch {}
 
@@ -61,7 +61,7 @@ export const DELETE = withTenantContext(async (request: Request) => {
 
     try { const { clearUserMfa } = await import('@/lib/mfa'); await clearUserMfa(String(ctx.userId)) } catch {}
 
-    await prisma.userProfile.upsert({ where: { userId: String(ctx.userId) }, create: { userId: String(ctx.userId), twoFactorEnabled: false }, update: { twoFactorEnabled: false } })
+    await prisma.user_profiles.upsert({ where: { userId: String(ctx.userId) }, create: { userId: String(ctx.userId), twoFactorEnabled: false }, update: { twoFactorEnabled: false } })
 
     try { await logAudit({ action: 'mfa.remove', actorId: String(ctx.userId), targetId: String(ctx.userId) }) } catch {}
 

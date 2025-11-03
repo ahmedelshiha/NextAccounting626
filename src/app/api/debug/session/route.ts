@@ -16,7 +16,7 @@ export const GET = withTenantContext(async (request: Request) => {
       // lightweight DB check
       // use a simple count scoped to tenant when possible
       const where: any = tenantId ? { tenantId } : {}
-      await prisma.user.count({ where })
+      await prisma.users.count({ where })
       dbOk = true
     } catch (err: any) {
       dbOk = false

@@ -10,7 +10,7 @@ export class RequestApprovalStepHandler extends BaseStepHandler {
     const { config, stepId } = context
 
     try {
-      const step = await prisma.workflowStep.findUnique({
+      const step = await prisma.workflow_steps.findUnique({
         where: { id: stepId }
       })
 
@@ -24,7 +24,7 @@ export class RequestApprovalStepHandler extends BaseStepHandler {
         return { success: false, error: 'No approvers specified' }
       }
 
-      await prisma.workflowStep.update({
+      await prisma.workflow_steps.update({
         where: { id: stepId },
         data: { status: 'IN_PROGRESS' }
       })

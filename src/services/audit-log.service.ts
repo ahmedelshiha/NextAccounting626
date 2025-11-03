@@ -108,7 +108,7 @@ export class AuditLogService {
 
     // Fetch logs with related user data
     const [logs, total] = await Promise.all([
-      prisma.auditLog.findMany({
+      prisma.audit_logs.findMany({
         where,
         include: {
           user: {
@@ -125,7 +125,7 @@ export class AuditLogService {
         take: limit,
         skip: offset
       }),
-      prisma.auditLog.count({ where })
+      prisma.audit_logs.count({ where })
     ])
 
     return {
@@ -141,7 +141,7 @@ export class AuditLogService {
    * Get audit log entry by ID
    */
   static async getAuditLog(id: string, tenantId: string): Promise<AuditLogEntry | null> {
-    const log = await prisma.auditLog.findFirst({
+    const log = await prisma.audit_logs.findFirst({
       where: {
         id,
         tenantId
@@ -172,7 +172,7 @@ export class AuditLogService {
     ipAddress?: string
     userAgent?: string
   }): Promise<AuditLogEntry> {
-    const log = await prisma.auditLog.create({
+    const log = await prisma.audit_logs.create({
       data: {
         tenantId: data.tenantId,
         userId: data.userId,
@@ -207,7 +207,7 @@ export class AuditLogService {
     if (cached) return cached
 
     // Use groupBy for better performance on large datasets
-    const actions = await prisma.auditLog.groupBy({
+    const actions = await prisma.audit_logs.groupBy({
       by: ['action'],
       where: {
         tenantId
@@ -236,13 +236,13 @@ export class AuditLogService {
     startDate.setDate(startDate.getDate() - days)
 
     const [totalLogs, logsByAction, logsByUser] = await Promise.all([
-      prisma.auditLog.count({
+      prisma.audit_logs.count({
         where: {
           tenantId,
           createdAt: { gte: startDate }
         }
       }),
-      prisma.auditLog.groupBy({
+      prisma.audit_logs.groupBy({
         by: ['action'],
         where: {
           tenantId,
@@ -258,7 +258,7 @@ export class AuditLogService {
         },
         take: 10
       }),
-      prisma.auditLog.groupBy({
+      prisma.audit_logs.groupBy({
         by: ['userId'],
         where: {
           tenantId,

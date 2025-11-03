@@ -29,7 +29,7 @@ export const GET = withTenantContext(async (request: NextRequest, context: Ctx) 
     const where: any = { slug }
     if (ctx.tenantId) where.tenantId = ctx.tenantId
 
-    const exists = await prisma.service.findFirst({ where, select: { id: true } })
+    const exists = await prisma.services.findFirst({ where, select: { id: true } })
     return NextResponse.json({ available: !Boolean(exists) })
   } catch (e: any) {
     const prismaMapped = mapPrismaError(e)

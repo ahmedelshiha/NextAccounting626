@@ -39,7 +39,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
       where.tags = { has: tag }
     }
 
-    const posts = await prisma.post.findMany({
+    const posts = await prisma.posts.findMany({
       where,
       include: {
         author: { select: { id: true, name: true, image: true } },
@@ -104,7 +104,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
     }
 
     // Check if slug already exists (optionally scoped by tenant if applicable)
-    const existingPost = await prisma.post.findUnique({ where: { slug } })
+    const existingPost = await prisma.posts.findUnique({ where: { slug } })
     if (existingPost) {
       return NextResponse.json(
         { error: 'Post with this slug already exists' },
@@ -151,7 +151,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
       } catch {}
     }
 
-    const post = await prisma.post.create({
+    const post = await prisma.posts.create({
       data: createData,
       include: { author: { select: { id: true, name: true, image: true } } },
     })

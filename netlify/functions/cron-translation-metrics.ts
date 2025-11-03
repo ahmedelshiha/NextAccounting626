@@ -93,7 +93,7 @@ export const handler: Handler = async (event: HandlerEvent) => {
  */
 async function collectTenantMetrics(tenantId: string): Promise<void> {
   // Get all translation keys for this tenant
-  const allKeys = await prisma.translationKey.findMany({
+  const allKeys = await prisma.translation_keys.findMany({
     where: { tenantId },
     select: {
       enTranslated: true,
@@ -115,7 +115,7 @@ async function collectTenantMetrics(tenantId: string): Promise<void> {
   const hiTranslated = allKeys.filter(k => k.hiTranslated).length
 
   // Get user distribution by language
-  const usersByLanguage = await prisma.userProfile.groupBy({
+  const usersByLanguage = await prisma.user_profiles.groupBy({
     by: ['preferredLanguage'],
     where: { user: { tenantId } },
     _count: { preferredLanguage: true },
@@ -135,7 +135,7 @@ async function collectTenantMetrics(tenantId: string): Promise<void> {
   today.setUTCHours(0, 0, 0, 0)
 
   // Create or update metrics record for today
-  const metrics = await prisma.translationMetrics.upsert({
+  const metrics = await prisma.translation_metrics.upsert({
     where: {
       tenantId_date: {
         tenantId,

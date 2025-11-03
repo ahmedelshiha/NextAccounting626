@@ -76,8 +76,8 @@ export const GET = withTenantContext(async (request: Request) => {
       let queryData: any = null
 
       const queryPromise = Promise.all([
-        prisma.user.count({ where: whereClause }),
-        prisma.user.findMany({
+        prisma.users.count({ where: whereClause }),
+        prisma.users.findMany({
           where: whereClause,
           select: {
             id: true,

@@ -111,11 +111,11 @@ export const POST = withTenantContext(async (request: NextRequest) => {
 
     const user =
       (tenantId
-        ? await prisma.user.findUnique({
+        ? await prisma.users.findUnique({
             where: { tenantId_email: { tenantId, email } },
           })
         : null) ??
-      (await prisma.user.findFirst({ where: { email } }))
+      (await prisma.users.findFirst({ where: { email } }))
 
     if (!user) {
       return NextResponse.json(
@@ -125,7 +125,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
     }
 
     const membership =
-      tenantId ? await prisma.tenantMembership.findFirst({ where: { userId: user.id, tenantId } }) : null
+      tenantId ? await prisma.tenant_memberships.findFirst({ where: { userId: user.id, tenantId } }) : null
 
     const tokenPayload = {
       name: user.name,

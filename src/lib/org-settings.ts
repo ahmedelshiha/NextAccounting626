@@ -30,7 +30,7 @@ export async function getEffectiveOrgSettingsFromHeaders(): Promise<EffectiveOrg
   const host = h.get('host') || null
   const tenantId = isMultiTenancyEnabled() ? extractSubdomain(host) : null
 
-  const row = await prisma.organizationSettings.findFirst({
+  const row = await prisma.organization_settings.findFirst({
     where: tenantId ? { tenantId } : {},
     select: {
       defaultLocale: true,

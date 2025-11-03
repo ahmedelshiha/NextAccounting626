@@ -38,7 +38,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       where.isActive = isActive === 'true'
     }
 
-    const templates = await prisma.permissionTemplate.findMany({
+    const templates = await prisma.permission_templates.findMany({
       where,
       select: {
         id: true,
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check for duplicate name
-    const existing = await prisma.permissionTemplate.findFirst({
+    const existing = await prisma.permission_templates.findFirst({
       where: {
         tenantId,
         name: body.name,
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Create template
-    const template = await prisma.permissionTemplate.create({
+    const template = await prisma.permission_templates.create({
       data: {
         tenantId,
         name: body.name,
@@ -206,7 +206,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     }
 
     // Update template
-    const template = await prisma.permissionTemplate.update({
+    const template = await prisma.permission_templates.update({
       where: { id: templateId },
       data: {
         name: body.name,
@@ -254,7 +254,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     }
 
     // Verify template belongs to tenant
-    const template = await prisma.permissionTemplate.findUnique({
+    const template = await prisma.permission_templates.findUnique({
       where: { id: templateId },
       select: { tenantId: true },
     })
@@ -267,7 +267,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     }
 
     // Delete template
-    await prisma.permissionTemplate.delete({
+    await prisma.permission_templates.delete({
       where: { id: templateId },
     })
 

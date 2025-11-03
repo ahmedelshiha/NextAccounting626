@@ -152,7 +152,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<BatchPerm
     }
 
     // Verify user is admin/super_admin
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
       select: { role: true, tenantId: true },
     })
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<BatchPerm
     }
 
     // Get target users
-    const targetUsers = await prisma.user.findMany({
+    const targetUsers = await prisma.users.findMany({
       where: {
         id: { in: targetUserIds },
         tenantId: tenantId,
@@ -351,7 +351,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<BatchPerm
         try {
           // Update role if changed
           if (roleChange) {
-            await tx.user.update({
+            await tx.users.update({
               where: { id: targetUser.id },
               data: { role: roleChange.to as any },
             })
@@ -366,7 +366,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<BatchPerm
           const addedPerms = newPermissions.filter(p => !oldPermissions.includes(p))
           const removedPerms = oldPermissions.filter(p => !newPermissions.includes(p))
 
-          await tx.permissionAudit.create({
+          await tx.permission_audits.create({
             data: {
               tenantId: tenantId,
               userId: targetUser.id,

@@ -56,7 +56,7 @@ export const POST = withTenantContext(async (request: Request) => {
       }
       if (before !== null) diffPayload.before = before as Prisma.InputJsonValue
       if (saved !== null && saved !== undefined) diffPayload.after = saved as Prisma.InputJsonValue
-      await prisma.settingChangeDiff.create({ data: diffPayload })
+      await prisma.setting_change_diffs.create({ data: diffPayload })
     } catch {}
 
     try {
@@ -68,7 +68,7 @@ export const POST = withTenantContext(async (request: Request) => {
         details: { category: 'serviceManagement' } as Prisma.InputJsonValue,
         ...(actorUserId ? { userId: actorUserId } : {}),
       }
-      await prisma.auditEvent.create({ data: auditPayload })
+      await prisma.audit_events.create({ data: auditPayload })
     } catch {}
 
     return jsonResponse({ ok: true, data: flattenSettings(saved) })

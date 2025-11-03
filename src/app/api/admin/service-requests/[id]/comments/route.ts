@@ -19,10 +19,10 @@ export const GET = withTenantContext(async (req: Request, context: { params: Pro
     return respond.unauthorized()
   }
 
-  const sr = await prisma.serviceRequest.findFirst({ where: { id, ...getTenantFilter() } })
+  const sr = await prisma.service_requests.findFirst({ where: { id, ...getTenantFilter() } })
   if (!sr) return respond.notFound('Service request not found')
 
-  const comments = await prisma.serviceRequestComment.findMany({
+  const comments = await prisma.service_request_comments.findMany({
     where: { serviceRequestId: id },
     include: { author: { select: { id: true, name: true, email: true } } },
     orderBy: { createdAt: 'asc' },
@@ -54,10 +54,10 @@ export const POST = withTenantContext(async (req: Request, context: { params: Pr
     return respond.badRequest('Invalid payload', zodDetails(parsed.error))
   }
 
-  const sr = await prisma.serviceRequest.findFirst({ where: { id, ...getTenantFilter() } })
+  const sr = await prisma.service_requests.findFirst({ where: { id, ...getTenantFilter() } })
   if (!sr) return respond.notFound('Service request not found')
 
-  const created = await prisma.serviceRequestComment.create({
+  const created = await prisma.service_request_comments.create({
     data: {
       serviceRequestId: id,
       authorId: ctx.userId ?? null,
@@ -69,7 +69,7 @@ export const POST = withTenantContext(async (req: Request, context: { params: Pr
 
   try { realtimeService.emitServiceRequestUpdate(id, { commentId: created.id, event: 'comment-created' }) } catch {}
   try {
-    const srClient = await prisma.serviceRequest.findUnique({ where: { id }, select: { clientId: true } })
+    const srClient = await prisma.service_requests.findUnique({ where: { id }, select: { clientId: true } })
     if (srClient?.clientId) {
       const ts = new Date().toISOString()
       realtimeService.broadcastToUser(String(srClient.clientId), { type: 'service-request-updated', data: { serviceRequestId: id, commentId: created.id, event: 'comment-created' }, timestamp: ts })

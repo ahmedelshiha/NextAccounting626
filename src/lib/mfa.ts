@@ -141,19 +141,19 @@ const SECRET_PREFIX = 'mfa:secret:'
 const BACKUP_PREFIX = 'mfa:backup:'
 
 export async function getUserMfaSecret(userId: string): Promise<string | null> {
-  const row = await prisma.verificationToken.findFirst({ where: { identifier: `${SECRET_PREFIX}${userId}` } }).catch(() => null)
+  const row = await prisma.verificationtokens.findFirst({ where: { identifier: `${SECRET_PREFIX}${userId}` } }).catch(() => null)
   return row?.token || null
 }
 
 export async function setUserMfaSecret(userId: string, secret: string): Promise<void> {
   await prisma.$transaction(async (tx) => {
-    await tx.verificationToken.deleteMany({ where: { identifier: `${SECRET_PREFIX}${userId}` } })
-    await tx.verificationToken.create({ data: { identifier: `${SECRET_PREFIX}${userId}`, token: secret, expires: new Date(Date.now() + 3650 * 24 * 60 * 60 * 1000) } })
+    await tx.verificationtokens.deleteMany({ where: { identifier: `${SECRET_PREFIX}${userId}` } })
+    await tx.verificationtokens.create({ data: { identifier: `${SECRET_PREFIX}${userId}`, token: secret, expires: new Date(Date.now() + 3650 * 24 * 60 * 60 * 1000) } })
   })
 }
 
 export async function clearUserMfa(userId: string): Promise<void> {
-  await prisma.verificationToken.deleteMany({ where: { OR: [ { identifier: `${SECRET_PREFIX}${userId}` }, { identifier: { startsWith: `${BACKUP_PREFIX}${userId}:` } } ] } })
+  await prisma.verificationtokens.deleteMany({ where: { OR: [ { identifier: `${SECRET_PREFIX}${userId}` }, { identifier: { startsWith: `${BACKUP_PREFIX}${userId}:` } } ] } })
 }
 
 export async function generateBackupCodes(userId: string, count = 5): Promise<string[]> {
@@ -163,17 +163,17 @@ export async function generateBackupCodes(userId: string, count = 5): Promise<st
     codes.push(Array.from(rb).map(b => b.toString(16).padStart(2, '0')).join(''))
   }
   await prisma.$transaction(async (tx) => {
-    await tx.verificationToken.deleteMany({ where: { identifier: { startsWith: `${BACKUP_PREFIX}${userId}:` } } })
+    await tx.verificationtokens.deleteMany({ where: { identifier: { startsWith: `${BACKUP_PREFIX}${userId}:` } } })
     for (const code of codes) {
-      await tx.verificationToken.create({ data: { identifier: `${BACKUP_PREFIX}${userId}:${code}`, token: code, expires: new Date(Date.now() + 3650 * 24 * 60 * 60 * 1000) } })
+      await tx.verificationtokens.create({ data: { identifier: `${BACKUP_PREFIX}${userId}:${code}`, token: code, expires: new Date(Date.now() + 3650 * 24 * 60 * 60 * 1000) } })
     }
   })
   return codes
 }
 
 export async function consumeBackupCode(userId: string, code: string): Promise<boolean> {
-  const row = await prisma.verificationToken.findFirst({ where: { identifier: `${BACKUP_PREFIX}${userId}:${code}`, token: code } })
+  const row = await prisma.verificationtokens.findFirst({ where: { identifier: `${BACKUP_PREFIX}${userId}:${code}`, token: code } })
   if (!row) return false
-  await prisma.verificationToken.delete({ where: { token: row.token } as any }).catch(() => {})
+  await prisma.verificationtokens.delete({ where: { token: row.token } as any }).catch(() => {})
   return true
 }

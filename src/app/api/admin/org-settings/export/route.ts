@@ -13,7 +13,7 @@ export const GET = withTenantContext(async () => {
     if (!hasPermission(ctx.role || undefined, PERMISSIONS.ORG_SETTINGS_EXPORT)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    const row = await prisma.organizationSettings.findFirst({ where: tenantFilter(ctx.tenantId) }).catch(() => null)
+    const row = await prisma.organization_settings.findFirst({ where: tenantFilter(ctx.tenantId) }).catch(() => null)
     const out = row ? {
       general: { name: row.name, tagline: row.tagline, description: row.description, industry: row.industry },
       contact: { contactEmail: row.contactEmail, contactPhone: row.contactPhone, address: row.address || {} },

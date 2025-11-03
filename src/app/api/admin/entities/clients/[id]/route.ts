@@ -16,7 +16,7 @@ export const GET = withTenantContext(async (req: Request, { params }: { params: 
       return NextResponse.json({ error: 'Tenant context missing' }, { status: 400 })
     }
 
-    const client = await prisma.user.findFirst({
+    const client = await prisma.users.findFirst({
       where: {
         id: params.id,
         role: 'CLIENT',
@@ -57,7 +57,7 @@ export const PATCH = withTenantContext(async (req: Request, { params }: { params
     const body = await req.json().catch(() => ({}))
     const { name, email } = body || {}
 
-    const client = await prisma.user.findFirst({
+    const client = await prisma.users.findFirst({
       where: {
         id: params.id,
         role: 'CLIENT',
@@ -71,7 +71,7 @@ export const PATCH = withTenantContext(async (req: Request, { params }: { params
 
     // Check if new email is available (if changed)
     if (email && email !== client.email) {
-      const existing = await prisma.user.findUnique({
+      const existing = await prisma.users.findUnique({
         where: { tenantId_email: { tenantId: ctx.tenantId, email } },
       })
       if (existing) {
@@ -79,7 +79,7 @@ export const PATCH = withTenantContext(async (req: Request, { params }: { params
       }
     }
 
-    const updated = await prisma.user.update({
+    const updated = await prisma.users.update({
       where: { id: params.id },
       data: {
         ...(name && { name }),
@@ -113,7 +113,7 @@ export const DELETE = withTenantContext(async (req: Request, { params }: { param
       return NextResponse.json({ error: 'Tenant context missing' }, { status: 400 })
     }
 
-    const client = await prisma.user.findFirst({
+    const client = await prisma.users.findFirst({
       where: {
         id: params.id,
         role: 'CLIENT',
@@ -125,7 +125,7 @@ export const DELETE = withTenantContext(async (req: Request, { params }: { param
       return NextResponse.json({ error: 'Client not found' }, { status: 404 })
     }
 
-    await prisma.user.delete({
+    await prisma.users.delete({
       where: { id: params.id },
     })
 

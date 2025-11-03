@@ -21,7 +21,7 @@ export async function getUserPreferredLocale(
   }
 
   try {
-    const user = await prisma.user.findFirst({
+    const user = await prisma.users.findFirst({
       where: { email: userEmail, tenantId },
       include: { userProfile: true },
     })

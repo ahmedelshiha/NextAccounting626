@@ -9,7 +9,7 @@ export class AssignRoleStepHandler extends BaseStepHandler {
     const { config, workflowId } = context
 
     try {
-      const workflow = await prisma.userWorkflow.findUnique({
+      const workflow = await prisma.user_workflows.findUnique({
         where: { id: workflowId },
         include: { user: true }
       })
@@ -27,7 +27,7 @@ export class AssignRoleStepHandler extends BaseStepHandler {
 
       const oldRole = workflow.user.role
 
-      await prisma.user.update({
+      await prisma.users.update({
         where: { id: workflow.user.id },
         data: { role: newRole as any }
       })

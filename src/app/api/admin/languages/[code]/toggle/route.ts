@@ -14,13 +14,13 @@ export const PATCH = withTenantContext(async (req: Request, { params }: { params
 
     const code = params.code.toLowerCase()
 
-    const language = await prisma.language.findUnique({ where: { code } })
+    const language = await prisma.languages.findUnique({ where: { code } })
 
     if (!language) {
       return Response.json({ error: 'Language not found' }, { status: 404 })
     }
 
-    const updated = await prisma.language.update({ where: { code }, data: { enabled: !language.enabled } })
+    const updated = await prisma.languages.update({ where: { code }, data: { enabled: !language.enabled } })
 
     return Response.json({ success: true, data: updated })
   } catch (error: any) {

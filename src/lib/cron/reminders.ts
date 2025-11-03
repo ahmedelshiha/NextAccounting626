@@ -47,7 +47,7 @@ export async function processBookingReminders(): Promise<ReminderRunResult> {
   }
 
   if (!upcoming.length) {
-    upcoming = await prisma.serviceRequest.findMany({
+    upcoming = await prisma.service_requests.findMany({
       where: { isBooking: true, confirmed: true, reminderSent: false, scheduledAt: { gte: now, lte: new Date(now.getTime() + 24 * 60 * 60 * 1000) } },
       select: {
         id: true,
@@ -176,7 +176,7 @@ export async function processBookingReminders(): Promise<ReminderRunResult> {
         tenantTimezoneCache.set(tenantKey, null)
         return undefined
       }
-      const row = await prisma.organizationSettings.findFirst({ where: { tenantId: tenantKey }, select: { defaultTimezone: true } }).catch(() => null)
+      const row = await prisma.organization_settings.findFirst({ where: { tenantId: tenantKey }, select: { defaultTimezone: true } }).catch(() => null)
       const tz = row?.defaultTimezone ?? null
       tenantTimezoneCache.set(tenantKey, tz)
       return tz ?? undefined
@@ -227,10 +227,10 @@ export async function processBookingReminders(): Promise<ReminderRunResult> {
         try { await prisma.scheduledReminder.update({ where: { id: (appt as any).scheduledReminderId }, data: { sent: true } }) } catch {}
         try {
           const remaining = await prisma.scheduledReminder.count({ where: { serviceRequestId: appt.id, sent: false } }).catch(() => 0)
-          if (remaining === 0) { try { await prisma.serviceRequest.update({ where: { id: appt.id }, data: { reminderSent: true } }) } catch {} }
+          if (remaining === 0) { try { await prisma.service_requests.update({ where: { id: appt.id }, data: { reminderSent: true } }) } catch {} }
         } catch {}
       } else {
-        try { await prisma.serviceRequest.update({ where: { id: appt.id }, data: { reminderSent: true } }) } catch {}
+        try { await prisma.service_requests.update({ where: { id: appt.id }, data: { reminderSent: true } }) } catch {}
       }
       try { await logAuditSafe({ action: 'booking:reminder:sent', details: { serviceRequestId: appt.id, scheduledAt, reminderHours } }) } catch {}
       results.push({ id: appt.id, sent: true })

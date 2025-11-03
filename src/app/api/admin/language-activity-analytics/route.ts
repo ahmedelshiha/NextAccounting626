@@ -107,7 +107,7 @@ async function handler(request: Request) {
     startDate.setDate(startDate.getDate() - days)
 
     // Fetch audit logs for language change events in range (these provide activity)
-    const auditLogs = await prisma.auditLog.findMany({
+    const auditLogs = await prisma.audit_logs.findMany({
       where: {
         tenantId,
         createdAt: {
@@ -126,7 +126,7 @@ async function handler(request: Request) {
 
     const userIds = Array.from(new Set(auditLogs.map(a => a.userId).filter((id): id is string => Boolean(id))))
 
-    const profiles = await prisma.userProfile.findMany({
+    const profiles = await prisma.user_profiles.findMany({
       where: {
         userId: { in: userIds },
       },
@@ -199,7 +199,7 @@ async function handler(request: Request) {
     }
 
     // Additionally include snapshot of current user language preferences
-    const userLanguagePreferences = await prisma.userProfile.findMany({
+    const userLanguagePreferences = await prisma.user_profiles.findMany({
       where: { user: { tenantId } },
       select: {
         preferredLanguage: true,

@@ -34,7 +34,7 @@ export const GET = withTenantContext(async (request: Request) => {
       return NextResponse.json({ user })
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: String(ctx.userId) },
       select: {
         id: true, name: true, email: true, role: true, image: true, emailVerified: true,
@@ -82,17 +82,17 @@ export const PUT = withTenantContext(async (request: Request) => {
 
     const updated = await prisma.$transaction(async (tx) => {
       if (Object.keys(updatesUser).length) {
-        await tx.user.update({ where: { id: String(ctx.userId) }, data: updatesUser })
+        await tx.users.update({ where: { id: String(ctx.userId) }, data: updatesUser })
       }
       if (parsed.data.organization !== undefined) {
-        await tx.userProfile.upsert({
+        await tx.user_profiles.upsert({
           where: { userId: String(ctx.userId) },
           create: { userId: String(ctx.userId), organization: parsed.data.organization },
           update: { organization: parsed.data.organization },
         })
       }
 
-      const u = await tx.user.findUnique({
+      const u = await tx.users.findUnique({
         where: { id: String(ctx.userId) },
         select: { id: true, name: true, email: true, role: true, image: true, emailVerified: true, userProfile: { select: { organization: true, twoFactorEnabled: true } } },
       })

@@ -14,13 +14,13 @@ export const POST = withTenantContext(async () => {
 
     const tenantId = ctx.tenantId as string
 
-    const integration = await prisma.crowdinIntegration.findUnique({ where: { tenantId } })
+    const integration = await prisma.crowdin_integrations.findUnique({ where: { tenantId } })
     if (!integration) {
       return Response.json({ error: 'Crowdin integration not configured' }, { status: 400 })
     }
 
     // Simulate a successful sync. In a real implementation, call Crowdin API and process results.
-    const updated = await prisma.crowdinIntegration.update({
+    const updated = await prisma.crowdin_integrations.update({
       where: { tenantId },
       data: {
         lastSyncAt: new Date(),

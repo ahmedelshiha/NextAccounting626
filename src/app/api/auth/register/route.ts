@@ -49,14 +49,14 @@ const _api_POST = async (request: NextRequest) => {
     const hashed = await bcrypt.hash(password, 12)
 
     // Upsert user by unique (tenantId, email)
-    const user = await prisma.user.upsert({
+    const user = await prisma.users.upsert({
       where: userByTenantEmail(tenantId, email),
       update: { name: name || undefined, password: hashed },
       create: { tenantId, email, name: name || null, password: hashed, role: 'CLIENT' as any },
     })
 
     // Ensure tenant membership exists
-    await prisma.tenantMembership.upsert({
+    await prisma.tenant_memberships.upsert({
       where: { userId_tenantId: { userId: user.id, tenantId } },
       update: { role: 'CLIENT' as any, isDefault: true },
       create: { userId: user.id, tenantId, role: 'CLIENT' as any, isDefault: true },

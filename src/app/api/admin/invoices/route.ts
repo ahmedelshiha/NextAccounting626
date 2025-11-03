@@ -49,7 +49,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
       if (createdTo) where.createdAt.lte = createdTo
     }
 
-    const invoices = await prisma.invoice.findMany({
+    const invoices = await prisma.invoices.findMany({
       where,
       include: {
         client: { select: { id: true, name: true, email: true } },
@@ -60,7 +60,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
       skip,
       take: limit,
     })
-    const total = await prisma.invoice.count({ where })
+    const total = await prisma.invoices.count({ where })
 
     return NextResponse.json({ invoices, total, page, limit })
   } catch (error) {
@@ -91,7 +91,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
     const resolvedCurrency: string = currency || 'USD'
 
     if (bookingId) {
-      const booking = await prisma.booking.findFirst({ where: { id: bookingId, ...tenantFilter(ctx.tenantId) }, include: { service: { select: { price: true } }, client: { select: { id: true } } } })
+      const booking = await prisma.bookings.findFirst({ where: { id: bookingId, ...tenantFilter(ctx.tenantId) }, include: { service: { select: { price: true } }, client: { select: { id: true } } } })
       if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
       clientId = booking.client?.id
       const svcPrice = booking.service?.price ? Number(booking.service.price) : 0
@@ -109,7 +109,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
       }
     }
 
-    const invoice = await prisma.invoice.create({
+    const invoice = await prisma.invoices.create({
       data: {
         bookingId: bookingId || null,
         clientId: clientId || null,
@@ -148,7 +148,7 @@ export const DELETE = withTenantContext(async (request: NextRequest) => {
       return NextResponse.json({ error: 'invoiceIds array required' }, { status: 400 })
     }
 
-    const result = await prisma.invoice.deleteMany({ where: { id: { in: invoiceIds }, ...tenantFilter(ctx.tenantId) } })
+    const result = await prisma.invoices.deleteMany({ where: { id: { in: invoiceIds }, ...tenantFilter(ctx.tenantId) } })
     await logAudit({ action: 'invoice.bulk.delete', actorId: ctx.userId ?? null, details: { count: result.count } })
     return NextResponse.json({ message: `Deleted ${result.count} invoices`, deleted: result.count })
   } catch (error) {

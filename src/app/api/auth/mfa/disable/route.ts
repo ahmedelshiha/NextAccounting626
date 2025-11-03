@@ -25,7 +25,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
     }
 
     // Get user to verify they exist
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: String(userId) },
       select: { id: true },
     })

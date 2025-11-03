@@ -27,7 +27,7 @@ export const GET = withTenantContext(async (request) => {
     const since = new Date()
     since.setDate(since.getDate() - days)
 
-    const keys = await prisma.translationKey.findMany({
+    const keys = await prisma.translation_keys.findMany({
       where: {
         tenantId,
         addedAt: { gte: since },

@@ -17,14 +17,14 @@ export const GET = withTenantContext(async (_request: Request) => {
 
   try {
     const [total, byStatus, byPriority, newThisWeek, completedThisMonth, pipeline, appointmentsCount, byBookingType] = await Promise.all([
-      prisma.serviceRequest.count({ where }),
-      prisma.serviceRequest.groupBy({ by: ['status'], _count: { _all: true }, where }),
-      prisma.serviceRequest.groupBy({ by: ['priority'], _count: { _all: true }, where }),
-      prisma.serviceRequest.count({ where: { ...where, createdAt: { gte: new Date(Date.now() - 7*24*60*60*1000) } } }),
-      prisma.serviceRequest.count({ where: { ...where, status: 'COMPLETED' as any, updatedAt: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } } }),
-      prisma.serviceRequest.aggregate({ _sum: { budgetMax: true }, where: { ...where, status: { in: ['DRAFT','SUBMITTED','IN_REVIEW','APPROVED','ASSIGNED','IN_PROGRESS'] as any } } }),
-      prisma.serviceRequest.count({ where: { ...where, isBooking: true as any } }),
-      prisma.serviceRequest.groupBy({ by: ['bookingType'], _count: { _all: true }, where: { ...where, isBooking: true as any } }),
+      prisma.service_requests.count({ where }),
+      prisma.service_requests.groupBy({ by: ['status'], _count: { _all: true }, where }),
+      prisma.service_requests.groupBy({ by: ['priority'], _count: { _all: true }, where }),
+      prisma.service_requests.count({ where: { ...where, createdAt: { gte: new Date(Date.now() - 7*24*60*60*1000) } } }),
+      prisma.service_requests.count({ where: { ...where, status: 'COMPLETED' as any, updatedAt: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } } }),
+      prisma.service_requests.aggregate({ _sum: { budgetMax: true }, where: { ...where, status: { in: ['DRAFT','SUBMITTED','IN_REVIEW','APPROVED','ASSIGNED','IN_PROGRESS'] as any } } }),
+      prisma.service_requests.count({ where: { ...where, isBooking: true as any } }),
+      prisma.service_requests.groupBy({ by: ['bookingType'], _count: { _all: true }, where: { ...where, isBooking: true as any } }),
     ])
 
     const statusDistribution = byStatus.reduce((acc: Record<string, number>, s) => { acc[s.status as any] = s._count._all; return acc }, {})

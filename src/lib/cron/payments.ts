@@ -24,13 +24,13 @@ export async function reconcileStripePayments(): Promise<{ ok: boolean; scanned:
       const srId = String(s?.metadata?.serviceRequestId || '')
       if (!srId) continue
       try {
-        const sr = await prisma.serviceRequest.findUnique({ where: { id: srId } })
+        const sr = await prisma.service_requests.findUnique({ where: { id: srId } })
         if (!sr) continue
         let nextStatus: any = null
         if (s.status === 'complete' && s.payment_status === 'paid') nextStatus = 'PAID'
         else if (s.status === 'expired' || s.payment_status === 'unpaid') nextStatus = 'FAILED'
         if (nextStatus && sr.paymentStatus !== nextStatus) {
-          await prisma.serviceRequest.update({
+          await prisma.service_requests.update({
             where: { id: sr.id },
             data: {
               paymentStatus: nextStatus,

@@ -12,7 +12,7 @@ export const GET = withTenantContext(async (req: Request) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const languages = await prisma.language.findMany({
+    const languages = await prisma.languages.findMany({
       orderBy: { code: 'asc' },
     })
 

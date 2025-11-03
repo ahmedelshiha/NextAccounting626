@@ -49,7 +49,7 @@ export async function calculateServicePrice(params: {
   const { serviceId, scheduledAt } = params
   const options = params.options || {}
 
-  const svc = await prisma.service.findUnique({ where: { id: serviceId } })
+  const svc = await prisma.services.findUnique({ where: { id: serviceId } })
   const status = (svc as any)?.status ? String((svc as any).status).toUpperCase() : undefined
   const active = (svc as any)?.active
   if (!svc || (status ? status !== 'ACTIVE' : active === false)) {
@@ -62,7 +62,7 @@ export async function calculateServicePrice(params: {
   try {
     const tenantId = (svc as any).tenantId as string | undefined | null
     if (tenantId) {
-      const org = await prisma.organizationSettings.findFirst({ where: { tenantId } }).catch(() => null)
+      const org = await prisma.organization_settings.findFirst({ where: { tenantId } }).catch(() => null)
       if (org && typeof org.defaultCurrency === 'string' && org.defaultCurrency) {
         baseCurrency = org.defaultCurrency
       }

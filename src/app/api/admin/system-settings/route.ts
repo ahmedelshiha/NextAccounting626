@@ -51,7 +51,7 @@ export const PUT = withTenantContext(async (req: Request) => {
       }
       if (before !== null) diffPayload.before = before as Prisma.InputJsonValue
       if (updated !== null && updated !== undefined) diffPayload.after = updated as Prisma.InputJsonValue
-      await prisma.settingChangeDiff.create({ data: diffPayload })
+      await prisma.setting_change_diffs.create({ data: diffPayload })
     } catch {}
     try {
       const actorUserId = ctx.userId ? String(ctx.userId) : undefined
@@ -62,7 +62,7 @@ export const PUT = withTenantContext(async (req: Request) => {
         details: { category: 'systemAdministration' } as Prisma.InputJsonValue,
         ...(actorUserId ? { userId: actorUserId } : {}),
       }
-      await prisma.auditEvent.create({ data: auditPayload })
+      await prisma.audit_events.create({ data: auditPayload })
     } catch {}
     return NextResponse.json(updated)
   } catch (e) {

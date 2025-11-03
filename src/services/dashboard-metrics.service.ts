@@ -44,8 +44,8 @@ export class DashboardMetricsService {
    */
   async getMetrics(tenantId: string): Promise<DashboardMetrics> {
     const [totalUsers, pendingCount] = await Promise.all([
-      prisma.user.count({ where: { tenantId } }),
-      prisma.bulkOperation.count()
+      prisma.users.count({ where: { tenantId } }),
+      prisma.bulk_operations.count()
     ])
 
     const activeUsers = Math.round(totalUsers * 0.9) // Simplified estimate
@@ -139,7 +139,7 @@ export class DashboardMetricsService {
    * Get role distribution
    */
   async getRoleDistribution(tenantId: string): Promise<any[]> {
-    const roleCounts = await prisma.user.groupBy({
+    const roleCounts = await prisma.users.groupBy({
       by: ['role'],
       where: { tenantId },
       _count: true

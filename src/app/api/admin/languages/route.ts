@@ -12,7 +12,7 @@ export const GET = withTenantContext(async () => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const languages = await prisma.language.findMany({
+    const languages = await prisma.languages.findMany({
       orderBy: { code: 'asc' },
     })
 
@@ -48,7 +48,7 @@ export const POST = withTenantContext(async (req: Request) => {
       return Response.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const existing = await prisma.language.findUnique({
+    const existing = await prisma.languages.findUnique({
       where: { code: code.toLowerCase() },
     })
 
@@ -56,7 +56,7 @@ export const POST = withTenantContext(async (req: Request) => {
       return Response.json({ error: 'Language code already exists' }, { status: 400 })
     }
 
-    const language = await prisma.language.create({
+    const language = await prisma.languages.create({
       data: {
         code: code.toLowerCase(),
         name,

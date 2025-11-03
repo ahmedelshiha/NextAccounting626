@@ -15,7 +15,7 @@ export const GET = withTenantContext(async () => {
 
   try {
     // Try DB-backed preferences (model: SidebarPreferences)
-    const prefs = await prisma.sidebarPreferences.findUnique({ where: { userId } }).catch(() => null)
+    const prefs = await prisma.sidebar_preferences.findUnique({ where: { userId } }).catch(() => null)
     if (prefs) return respond.ok(prefs)
   } catch (e: any) {
     const code = String((e as any)?.code || '')
@@ -52,7 +52,7 @@ export const PUT = withTenantContext(async (req: Request) => {
 
   try {
     const data = parsed.data as any
-    const upserted = await prisma.sidebarPreferences.upsert({
+    const upserted = await prisma.sidebar_preferences.upsert({
       where: { userId },
       create: { userId, ...data },
       update: { ...data },

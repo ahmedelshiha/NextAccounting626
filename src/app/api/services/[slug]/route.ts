@@ -6,7 +6,7 @@ import { withTenantContext } from '@/lib/api-wrapper'
 const _api_GET = async (request: NextRequest, context: { params: Promise<{ slug: string }> }) => {
   try {
     const { slug } = await context.params
-    const service = await prisma.service.findFirst({
+    const service = await prisma.services.findFirst({
       where: {
         slug,
         status: 'ACTIVE'
@@ -22,7 +22,7 @@ const _api_GET = async (request: NextRequest, context: { params: Promise<{ slug:
 
     // Increment views counter (best-effort)
     try {
-      await prisma.service.update({ where: { id: service.id }, data: { views: { increment: 1 } } })
+      await prisma.services.update({ where: { id: service.id }, data: { views: { increment: 1 } } })
     } catch (err) {
       // ignore
     }
@@ -58,9 +58,9 @@ export const PUT = withTenantContext(async (request: NextRequest, context: { par
       image
     } = body
 
-    const existing = await prisma.service.findFirst({ where: { slug } })
+    const existing = await prisma.services.findFirst({ where: { slug } })
     if (!existing) return NextResponse.json({ error: 'Service not found' }, { status: 404 })
-    const updated = await prisma.service.update({
+    const updated = await prisma.services.update({
       where: { id: existing.id },
       data: {
         ...(name && { name }),
@@ -91,9 +91,9 @@ export const DELETE = withTenantContext(async (request: NextRequest, context: { 
   try {
     const { slug } = await context.params
     // Soft delete by setting active to false
-    const existing = await prisma.service.findFirst({ where: { slug } })
+    const existing = await prisma.services.findFirst({ where: { slug } })
     if (!existing) return NextResponse.json({ error: 'Service not found' }, { status: 404 })
-    await prisma.service.update({
+    await prisma.services.update({
       where: { id: existing.id },
       data: { active: false }
     })

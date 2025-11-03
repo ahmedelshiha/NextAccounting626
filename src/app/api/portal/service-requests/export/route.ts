@@ -87,7 +87,7 @@ export const GET = withTenantContext(async (req: NextRequest) => {
       async writeRows(write) {
         let cursor: string | null = null
         for (;;) {
-          const batch: ServiceRequestWithService[] = await prisma.serviceRequest.findMany({
+          const batch: ServiceRequestWithService[] = await prisma.service_requests.findMany({
             where,
             include: { service: { select: { name: true } } },
             orderBy: type === 'appointments' ? { scheduledAt: 'desc' } : { createdAt: 'desc' },
@@ -125,7 +125,7 @@ export const GET = withTenantContext(async (req: NextRequest) => {
   }
 
   try {
-    const items = await prisma.serviceRequest.findMany({
+    const items = await prisma.service_requests.findMany({
       where,
       include: { service: { select: { name: true } } },
       orderBy: type === 'appointments' ? { scheduledAt: 'desc' } : { createdAt: 'desc' },

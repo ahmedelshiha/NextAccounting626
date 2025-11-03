@@ -26,7 +26,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
   const bookingType = String(body.bookingType || '').toUpperCase()
 
   try {
-    const svc = await prisma.service.findUnique({ where: { id: serviceId } })
+    const svc = await prisma.services.findUnique({ where: { id: serviceId } })
     if (!svc || String((svc as any).status).toUpperCase() !== 'ACTIVE') return bad('Service not found or inactive', 400)
 
     const emergencyPct = bookingType === 'EMERGENCY' ? 0.5 : 0
@@ -61,7 +61,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
 
     let customerEmail: string | undefined = undefined
     if (userId) {
-      const dbUser = await prisma.user.findUnique({ where: { id: String(userId) }, select: { email: true } })
+      const dbUser = await prisma.users.findUnique({ where: { id: String(userId) }, select: { email: true } })
       customerEmail = dbUser?.email ?? undefined
     }
 
@@ -95,7 +95,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
 
     try {
       if (serviceRequestId) {
-        await prisma.serviceRequest.update({ where: { id: serviceRequestId }, data: { paymentProvider: 'STRIPE', paymentSessionId: sessionObj.id, paymentStatus: 'UNPAID' as any, paymentAmountCents: quote.totalCents, paymentCurrency: quote.currency, paymentUpdatedAt: new Date() } })
+        await prisma.service_requests.update({ where: { id: serviceRequestId }, data: { paymentProvider: 'STRIPE', paymentSessionId: sessionObj.id, paymentStatus: 'UNPAID' as any, paymentAmountCents: quote.totalCents, paymentCurrency: quote.currency, paymentUpdatedAt: new Date() } })
       }
     } catch {}
 

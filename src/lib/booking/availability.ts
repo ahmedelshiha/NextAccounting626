@@ -203,7 +203,7 @@ export async function getAvailabilityForService(params: {
   }
   const serviceModel = await getModel('service')
   if (!serviceModel || typeof serviceModel.findUnique !== 'function') {
-    console.warn('[getAvailabilityForService] prisma.service.findUnique not available in test environment')
+    console.warn('[getAvailabilityForService] prisma.services.findUnique not available in test environment')
     return { slots: [] as AvailabilitySlot[] }
   }
   let svc = await serviceModel.findUnique({ where: { id: serviceId } })
@@ -231,7 +231,7 @@ export async function getAvailabilityForService(params: {
   if (teamMemberId) {
     try {
       console.log('[getAvailabilityForService] fetching teamMember', teamMemberId)
-      member = await prisma.teamMember.findUnique({ where: { id: teamMemberId }, select: { id: true, workingHours: true, bookingBuffer: true, maxConcurrentBookings: true, isAvailable: true, timeZone: true } })
+      member = await prisma.team_members.findUnique({ where: { id: teamMemberId }, select: { id: true, workingHours: true, bookingBuffer: true, maxConcurrentBookings: true, isAvailable: true, timeZone: true } })
       console.log('[getAvailabilityForService] got teamMember', !!member)
     } catch (err) {
       console.error('[getAvailabilityForService] teamMember error', err)
@@ -266,7 +266,7 @@ export async function getAvailabilityForService(params: {
 
   // Fetch busy bookings for the given window. If a team member is specified, filter to that member.
   console.log('[getAvailabilityForService] fetching bookings window', from.toISOString(), to.toISOString())
-  const busyBookings = await prisma.booking.findMany({
+  const busyBookings = await prisma.bookings.findMany({
     where: {
       serviceId,
       scheduledAt: { gte: from, lte: to },
@@ -328,7 +328,7 @@ export async function getAvailabilityForService(params: {
   if (!tz && member && member.timeZone) tz = member.timeZone || undefined
   if (!tz) {
     try {
-      const org = await prisma.organizationSettings.findFirst({ where: { tenantId: svc.tenantId ?? undefined }, select: { defaultTimezone: true } }).catch(() => null)
+      const org = await prisma.organization_settings.findFirst({ where: { tenantId: svc.tenantId ?? undefined }, select: { defaultTimezone: true } }).catch(() => null)
       tz = org?.defaultTimezone ?? undefined
     } catch {}
   }

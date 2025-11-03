@@ -36,7 +36,7 @@ export class RecommendationEngineService {
     const recommendations: Recommendation[] = []
 
     // Check for inactive admin accounts
-    const adminUsers = await prisma.user.findMany({
+    const adminUsers = await prisma.users.findMany({
       where: {
         tenantId: context.tenantId,
         role: 'ADMIN' as any
@@ -61,7 +61,7 @@ export class RecommendationEngineService {
     }
 
     // Check for high volume operations
-    const bulkOps = await prisma.bulkOperation.count({
+    const bulkOps = await prisma.bulk_operations.count({
       where: { createdBy: context.userId }
     })
 
@@ -106,7 +106,7 @@ export class RecommendationEngineService {
   async getSecurityAlerts(tenantId: string): Promise<Recommendation[]> {
     const alerts: Recommendation[] = []
 
-    const adminCount = await prisma.user.count({
+    const adminCount = await prisma.users.count({
       where: {
         tenantId,
         role: 'ADMIN'

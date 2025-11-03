@@ -175,9 +175,9 @@ async function handleCheckoutSessionCompleted(session: any) {
   const explicitId = String(session?.metadata?.serviceRequestId || '')
   if (explicitId) {
     // Direct service request ID provided in metadata
-    const sr = await prisma.serviceRequest.findUnique({ where: { id: explicitId } })
+    const sr = await prisma.service_requests.findUnique({ where: { id: explicitId } })
     if (sr) {
-      await prisma.serviceRequest.update({
+      await prisma.service_requests.update({
         where: { id: sr.id },
         data: {
           paymentStatus: 'PAID',
@@ -202,7 +202,7 @@ async function handleCheckoutSessionCompleted(session: any) {
   let target: any = null
   
   if (userId && serviceId && scheduledAt) {
-    target = await prisma.serviceRequest.findFirst({
+    target = await prisma.service_requests.findFirst({
       where: { clientId: userId, serviceId, scheduledAt },
     })
   }
@@ -210,7 +210,7 @@ async function handleCheckoutSessionCompleted(session: any) {
   if (!target && userId && serviceId) {
     // Fallback: find recent booking for this user + service
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000)
-    target = await prisma.serviceRequest.findFirst({
+    target = await prisma.service_requests.findFirst({
       where: { 
         clientId: userId, 
         serviceId, 
@@ -222,7 +222,7 @@ async function handleCheckoutSessionCompleted(session: any) {
   }
 
   if (target) {
-    await prisma.serviceRequest.update({
+    await prisma.service_requests.update({
       where: { id: target.id },
       data: {
         paymentStatus: 'PAID',
@@ -245,10 +245,10 @@ async function handlePaymentFailed(paymentObject: any) {
   
   const sessionId = paymentObject?.id || paymentObject?.checkout_session || null
   if (sessionId) {
-    const sr = await prisma.serviceRequest.findFirst({ where: { paymentSessionId: sessionId } })
+    const sr = await prisma.service_requests.findFirst({ where: { paymentSessionId: sessionId } })
     
     if (sr) {
-      await prisma.serviceRequest.update({ where: { id: sr.id }, data: { paymentStatus: 'FAILED', paymentUpdatedAt: new Date(), paymentAttempts: (sr.paymentAttempts ?? 0) + 1 } })
+      await prisma.service_requests.update({ where: { id: sr.id }, data: { paymentStatus: 'FAILED', paymentUpdatedAt: new Date(), paymentAttempts: (sr.paymentAttempts ?? 0) + 1 } })
     }
   }
 }

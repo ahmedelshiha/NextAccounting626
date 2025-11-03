@@ -48,7 +48,7 @@ export class BulkOperationsAdvancedService {
    * Execute bulk operation as dry run
    */
   async executeDryRun(request: BulkOperationRequest): Promise<BulkOperationResult> {
-    const users = await prisma.user.findMany({
+    const users = await prisma.users.findMany({
       where: { id: { in: request.userIds } }
     })
 
@@ -73,7 +73,7 @@ export class BulkOperationsAdvancedService {
    * Analyze impact of a bulk operation before execution
    */
   async analyzeImpact(request: BulkOperationRequest): Promise<BulkOperationImpact> {
-    const users = await prisma.user.findMany({
+    const users = await prisma.users.findMany({
       where: { id: { in: request.userIds } }
     })
 
@@ -118,7 +118,7 @@ export class BulkOperationsAdvancedService {
     request: BulkOperationRequest,
     dryRun: boolean = true
   ): Promise<BulkOperationResult> {
-    const users = await prisma.user.findMany({
+    const users = await prisma.users.findMany({
       where: { id: { in: request.userIds } }
     })
 
@@ -129,7 +129,7 @@ export class BulkOperationsAdvancedService {
     for (const user of users) {
       try {
         if (!dryRun && request.type === 'ROLE_CHANGE' && request.targetValue) {
-          await prisma.user.update({
+          await prisma.users.update({
             where: { id: user.id },
             data: { role: request.targetValue as any }
           })

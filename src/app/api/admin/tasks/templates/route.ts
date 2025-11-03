@@ -31,7 +31,7 @@ export const GET = withTenantContext(async (request?: Request) => {
     }
 
     const tenantId = ctx.tenantId
-    const rows = await prisma.taskTemplate.findMany({ where: tenantFilter(tenantId), orderBy: { createdAt: 'desc' } })
+    const rows = await prisma.task_templates.findMany({ where: tenantFilter(tenantId), orderBy: { createdAt: 'desc' } })
     const mapped = rows.map(t => ({
       id: t.id,
       name: t.name,
@@ -88,7 +88,7 @@ export const POST = withTenantContext(async (request: Request) => {
     }
 
     const tenantId = ctx.tenantId
-    const created = await prisma.taskTemplate.create({
+    const created = await prisma.task_templates.create({
       data: {
         name: String(body.name || 'Template'),
         content: String(body.content || ''),
@@ -160,7 +160,7 @@ export const PATCH = withTenantContext(async (request: Request) => {
     }
 
     if (!body.id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
-    const updated = await prisma.taskTemplate.update({ where: { id: String(body.id) }, data: {
+    const updated = await prisma.task_templates.update({ where: { id: String(body.id) }, data: {
       ...(body.name !== undefined ? { name: body.name } : {}),
       ...(body.content !== undefined ? { content: body.content } : {}),
       ...(body.description !== undefined ? { description: body.description } : {}),
@@ -212,7 +212,7 @@ export const DELETE = withTenantContext(async (request: Request) => {
       return NextResponse.json({ ok: true })
     }
 
-    await prisma.taskTemplate.delete({ where: { id } })
+    await prisma.task_templates.delete({ where: { id } })
     return NextResponse.json({ ok: true })
   } catch (e) {
     console.error('Delete template error', e)

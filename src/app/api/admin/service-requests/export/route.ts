@@ -90,7 +90,7 @@ export const GET = withTenantContext(async (request: Request) => {
 
       try {
         for (;;) {
-          const batch: ServiceRequestWithRelations[] = await prisma.serviceRequest.findMany({
+          const batch: ServiceRequestWithRelations[] = await prisma.service_requests.findMany({
             where,
             include: {
               client: { select: { id: true, name: true, email: true } },
@@ -145,7 +145,7 @@ export const GET = withTenantContext(async (request: Request) => {
           }
           cursor = null
           for (;;) {
-            const batch: ServiceRequestWithRelations[] = await prisma.serviceRequest.findMany({
+            const batch: ServiceRequestWithRelations[] = await prisma.service_requests.findMany({
               where: whereLegacy,
               include: {
                 client: { select: { id: true, name: true, email: true } },

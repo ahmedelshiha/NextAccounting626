@@ -18,7 +18,7 @@ export const GET = withTenantContext(async () => {
       where.tenantId = String(ctx.tenantId)
     }
 
-    const count = await prisma.booking.count({ where })
+    const count = await prisma.bookings.count({ where })
 
     return NextResponse.json({ success: true, count })
   } catch (error) {

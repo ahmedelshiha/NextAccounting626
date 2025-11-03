@@ -17,7 +17,7 @@ export const GET = withTenantContext(async () => {
       return NextResponse.json({ error: 'Tenant context missing' }, { status: 400 })
     }
 
-    const roles = await prisma.customRole.findMany({
+    const roles = await prisma.custom_roles.findMany({
       where: {
         tenantId: ctx.tenantId,
       },
@@ -67,7 +67,7 @@ export const POST = withTenantContext(async (req: Request) => {
     }
 
     // Check if role name already exists for this tenant
-    const existing = await prisma.customRole.findFirst({
+    const existing = await prisma.custom_roles.findFirst({
       where: {
         name,
         tenantId: ctx.tenantId,
@@ -78,7 +78,7 @@ export const POST = withTenantContext(async (req: Request) => {
       return NextResponse.json({ error: 'Role name already exists' }, { status: 409 })
     }
 
-    const newRole = await prisma.customRole.create({
+    const newRole = await prisma.custom_roles.create({
       data: {
         name,
         description,

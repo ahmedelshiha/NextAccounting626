@@ -25,14 +25,14 @@ export const GET = withTenantContext(async (request: Request) => {
     const skip = (page - 1) * pageSize
 
     const [rows, total] = await Promise.all([
-      prisma.auditLog.findMany({
+      prisma.audit_logs.findMany({
         where: { userId: String(ctx.userId || '') },
         orderBy: { createdAt: 'desc' },
         skip,
         take: pageSize,
         select: { id: true, action: true, resource: true, metadata: true, ipAddress: true, userAgent: true, createdAt: true },
       }),
-      prisma.auditLog.count({
+      prisma.audit_logs.count({
         where: { userId: String(ctx.userId || '') },
       }),
     ])

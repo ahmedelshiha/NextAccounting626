@@ -44,7 +44,7 @@ export class BookingSettingsService {
   }
 
   private async invalidateBySettingsId(settingsId: string) {
-    const row = await prisma.bookingSettings.findUnique({ where: { id: settingsId }, select: { tenantId: true } })
+    const row = await prisma.booking_settings.findUnique({ where: { id: settingsId }, select: { tenantId: true } })
     await this.invalidateByTenant(row?.tenantId ?? null)
   }
 
@@ -54,7 +54,7 @@ export class BookingSettingsService {
     const cached = await cache.get<BookingSettings | null>(key)
     if (cached) return cached
 
-    const settings = await prisma.bookingSettings.findFirst({
+    const settings = await prisma.booking_settings.findFirst({
       where: { tenantId: tenantId ?? undefined },
       include: {
         steps: { orderBy: { stepOrder: 'asc' } },
@@ -67,13 +67,13 @@ export class BookingSettingsService {
     if (settings) {
       const sAny: any = settings
       if (!Array.isArray(sAny.steps) || sAny.steps.length === 0) {
-        sAny.steps = await prisma.bookingStepConfig.findMany({ where: { bookingSettingsId: sAny.id }, orderBy: { stepOrder: 'asc' } })
+        sAny.steps = await prisma.booking_step_config.findMany({ where: { bookingSettingsId: sAny.id }, orderBy: { stepOrder: 'asc' } })
       }
       if (!Array.isArray(sAny.businessHoursConfig) || sAny.businessHoursConfig.length === 0) {
-        sAny.businessHoursConfig = await prisma.businessHoursConfig.findMany({ where: { bookingSettingsId: sAny.id }, orderBy: { dayOfWeek: 'asc' } })
+        sAny.businessHoursConfig = await prisma.business_hours_config.findMany({ where: { bookingSettingsId: sAny.id }, orderBy: { dayOfWeek: 'asc' } })
       }
       if (!Array.isArray(sAny.paymentMethods) || sAny.paymentMethods.length === 0) {
-        sAny.paymentMethods = await prisma.paymentMethodConfig.findMany({ where: { bookingSettingsId: sAny.id } })
+        sAny.paymentMethods = await prisma.payment_method_config.findMany({ where: { bookingSettingsId: sAny.id } })
       }
       if (!Array.isArray(sAny.notificationTemplates) || sAny.notificationTemplates.length === 0) {
         const nt: any = (prisma as any).notificationTemplate
@@ -91,18 +91,18 @@ export class BookingSettingsService {
   /** Create default settings for a tenant with sensible defaults. */
   async createDefaultSettings(tenantId: string | null): Promise<BookingSettings> {
     await prisma.$transaction(async (tx) => {
-      const settings = await tx.bookingSettings.create({
+      const settings = await tx.booking_settings.create({
         data: (tenantId ? { tenantId } : { tenantId: null }) as any,
       })
 
-      await tx.bookingStepConfig.createMany({ data: this.defaultSteps(settings.id) })
-      await tx.businessHoursConfig.createMany({ data: this.defaultBusinessHours(settings.id) })
-      await tx.paymentMethodConfig.createMany({ data: this.defaultPaymentMethods(settings.id) })
-      await tx.notificationTemplate.createMany({ data: this.defaultNotificationTemplates(settings.id) })
+      await tx.booking_step_config.createMany({ data: this.defaultSteps(settings.id) })
+      await tx.business_hours_config.createMany({ data: this.defaultBusinessHours(settings.id) })
+      await tx.payment_method_config.createMany({ data: this.defaultPaymentMethods(settings.id) })
+      await tx.notification_templates.createMany({ data: this.defaultNotificationTemplates(settings.id) })
     })
 
     await this.invalidateByTenant(tenantId)
-    const full = await prisma.bookingSettings.findFirst({
+    const full = await prisma.booking_settings.findFirst({
       where: { tenantId: tenantId ?? undefined },
       include: {
         steps: { orderBy: { stepOrder: 'asc' } },
@@ -126,10 +126,10 @@ export class BookingSettingsService {
       throw new Error(`Settings validation failed: ${msg}`)
     }
 
-    let target = await prisma.bookingSettings.findFirst({ where: { tenantId } })
+    let target = await prisma.booking_settings.findFirst({ where: { tenantId } })
     if (!target) {
       await this.createDefaultSettings(tenantId)
-      target = await prisma.bookingSettings.findFirst({ where: { tenantId } })
+      target = await prisma.booking_settings.findFirst({ where: { tenantId } })
     }
 
     const data: Record<string, unknown> = {
@@ -164,7 +164,7 @@ export class BookingSettingsService {
     if ('forms' in data) (data as any).forms = toNullableJson((data as any).forms)
 
     if (!target) throw new Error('Booking settings not found')
-    await prisma.bookingSettings.update({ where: { id: (target as any).id }, data })
+    await prisma.booking_settings.update({ where: { id: (target as any).id }, data })
 
     await this.invalidateByTenant(tenantId)
     const updated = (await this.getBookingSettings(tenantId)) as BookingSettings
@@ -177,8 +177,8 @@ export class BookingSettingsService {
   /** Replace step configuration. */
   async updateBookingSteps(settingsId: string, steps: Partial<BookingStepConfig>[]): Promise<BookingStepConfig[]> {
     const result = await prisma.$transaction(async (tx) => {
-      await tx.bookingStepConfig.deleteMany({ where: { bookingSettingsId: settingsId } })
-      await tx.bookingStepConfig.createMany({
+      await tx.booking_step_config.deleteMany({ where: { bookingSettingsId: settingsId } })
+      await tx.booking_step_config.createMany({
         data: steps.map((s, i) => ({
           bookingSettingsId: settingsId,
           stepName: s.stepName ?? `STEP_${i + 1}`,
@@ -191,7 +191,7 @@ export class BookingSettingsService {
           customFields: (s as any).customFields === undefined ? getDbNull() : ((s as any).customFields as any),
         })),
       })
-      return tx.bookingStepConfig.findMany({ where: { bookingSettingsId: settingsId }, orderBy: { stepOrder: 'asc' } })
+      return tx.booking_step_config.findMany({ where: { bookingSettingsId: settingsId }, orderBy: { stepOrder: 'asc' } })
     })
     await this.invalidateBySettingsId(settingsId)
     return result as unknown as BookingStepConfig[]
@@ -200,8 +200,8 @@ export class BookingSettingsService {
   /** Replace business hours configuration. */
   async updateBusinessHours(settingsId: string, hours: Partial<BusinessHoursConfig>[]): Promise<BusinessHoursConfig[]> {
     const result = await prisma.$transaction(async (tx) => {
-      await tx.businessHoursConfig.deleteMany({ where: { bookingSettingsId: settingsId } })
-      await tx.businessHoursConfig.createMany({
+      await tx.business_hours_config.deleteMany({ where: { bookingSettingsId: settingsId } })
+      await tx.business_hours_config.createMany({
         data: hours.map((h) => ({
           bookingSettingsId: settingsId,
           dayOfWeek: h.dayOfWeek ?? 1,
@@ -213,7 +213,7 @@ export class BookingSettingsService {
           maxBookingsPerHour: h.maxBookingsPerHour ?? 4,
         })),
       })
-      return tx.businessHoursConfig.findMany({ where: { bookingSettingsId: settingsId }, orderBy: { dayOfWeek: 'asc' } })
+      return tx.business_hours_config.findMany({ where: { bookingSettingsId: settingsId }, orderBy: { dayOfWeek: 'asc' } })
     })
     await this.invalidateBySettingsId(settingsId)
     return result as unknown as BusinessHoursConfig[]
@@ -224,7 +224,7 @@ export class BookingSettingsService {
     await prisma.$transaction(async (tx) => {
       for (const m of methods) {
         if (!m.methodType) continue
-        await tx.paymentMethodConfig.upsert({
+        await tx.payment_method_config.upsert({
           where: { bookingSettingsId_methodType: { bookingSettingsId: settingsId, methodType: m.methodType } },
           update: {
             enabled: m.enabled ?? true,
@@ -249,7 +249,7 @@ export class BookingSettingsService {
         })
       }
     })
-    const list = await prisma.paymentMethodConfig.findMany({ where: { bookingSettingsId: settingsId } })
+    const list = await prisma.payment_method_config.findMany({ where: { bookingSettingsId: settingsId } })
     await this.invalidateBySettingsId(settingsId)
     return list as unknown as PaymentMethodConfig[]
   }
@@ -340,9 +340,9 @@ export class BookingSettingsService {
         throw new Error('tenantId is required to import booking settings')
       }
 
-      let settings = await tx.bookingSettings.findFirst({ where: { tenantId } })
+      let settings = await tx.booking_settings.findFirst({ where: { tenantId } })
       if (!settings) {
-        settings = await tx.bookingSettings.create({ data: { tenantId } as any })
+        settings = await tx.booking_settings.create({ data: { tenantId } as any })
       }
 
       if (overwriteExisting && selectedSections.includes('settings')) {
@@ -352,14 +352,14 @@ export class BookingSettingsService {
         settingsData.blackoutDates = toNullableJson(settingsData.blackoutDates)
         settingsData.holidaySchedule = toNullableJson(settingsData.holidaySchedule)
         settingsData.reminderHours = toNullableJson(settingsData.reminderHours)
-        await tx.bookingSettings.update({
+        await tx.booking_settings.update({
           where: { id: settings.id },
           data: { ...settingsData, id: undefined as any },
         })
       }
 
       if (selectedSections.includes('steps')) {
-        await tx.bookingStepConfig.deleteMany({ where: { bookingSettingsId: settings.id } })
+        await tx.booking_step_config.deleteMany({ where: { bookingSettingsId: settings.id } })
         if ((data.steps ?? []).length) {
           const stepsData = (data.steps as any[]).map((s: any) => ({
             bookingSettingsId: settings!.id,
@@ -372,19 +372,19 @@ export class BookingSettingsService {
             validationRules: s.validationRules === undefined ? getDbNull() : (s.validationRules === null ? getDbNull() : s.validationRules),
             customFields: s.customFields === undefined ? getDbNull() : (s.customFields === null ? getDbNull() : s.customFields),
           }))
-          await tx.bookingStepConfig.createMany({ data: stepsData as any })
+          await tx.booking_step_config.createMany({ data: stepsData as any })
         }
       }
 
       if (selectedSections.includes('businessHours')) {
-        await tx.businessHoursConfig.deleteMany({ where: { bookingSettingsId: settings.id } })
+        await tx.business_hours_config.deleteMany({ where: { bookingSettingsId: settings.id } })
         if ((data.businessHours ?? []).length) {
-          await tx.businessHoursConfig.createMany({ data: data.businessHours.map((h) => ({ ...h, id: undefined as any, bookingSettingsId: settings!.id })) })
+          await tx.business_hours_config.createMany({ data: data.businessHours.map((h) => ({ ...h, id: undefined as any, bookingSettingsId: settings!.id })) })
         }
       }
 
       if (selectedSections.includes('paymentMethods')) {
-        await tx.paymentMethodConfig.deleteMany({ where: { bookingSettingsId: settings.id } })
+        await tx.payment_method_config.deleteMany({ where: { bookingSettingsId: settings.id } })
         if ((data.paymentMethods ?? []).length) {
           const pmData = (data.paymentMethods as any[]).map((m: any) => ({
             bookingSettingsId: settings!.id,
@@ -397,12 +397,12 @@ export class BookingSettingsService {
             maxAmount: m.maxAmount ?? null,
             gatewayConfig: m.gatewayConfig === undefined ? getDbNull() : (m.gatewayConfig === null ? getDbNull() : m.gatewayConfig),
           }))
-          await tx.paymentMethodConfig.createMany({ data: pmData as any })
+          await tx.payment_method_config.createMany({ data: pmData as any })
         }
       }
 
       if (selectedSections.includes('notifications')) {
-        await tx.notificationTemplate.deleteMany({ where: { bookingSettingsId: settings.id } })
+        await tx.notification_templates.deleteMany({ where: { bookingSettingsId: settings.id } })
         if ((data.notificationTemplates ?? []).length) {
           const notifData = (data.notificationTemplates as any[]).map((t: any) => ({
             bookingSettingsId: settings!.id,
@@ -413,7 +413,7 @@ export class BookingSettingsService {
             content: t.content,
             variables: t.variables === undefined ? getDbNull() : (t.variables === null ? getDbNull() : t.variables),
           }))
-          await tx.notificationTemplate.createMany({ data: notifData as any })
+          await tx.notification_templates.createMany({ data: notifData as any })
         }
       }
     })
@@ -431,12 +431,12 @@ export class BookingSettingsService {
     }
 
     await prisma.$transaction(async (tx) => {
-      const existing = await tx.bookingSettings.findFirst({ where: { tenantId } })
+      const existing = await tx.booking_settings.findFirst({ where: { tenantId } })
       if (existing) {
-        await tx.bookingStepConfig.deleteMany({ where: { bookingSettingsId: existing.id } })
-        await tx.businessHoursConfig.deleteMany({ where: { bookingSettingsId: existing.id } })
-        await tx.paymentMethodConfig.deleteMany({ where: { bookingSettingsId: existing.id } })
-        await tx.notificationTemplate.deleteMany({ where: { bookingSettingsId: existing.id } })
+        await tx.booking_step_config.deleteMany({ where: { bookingSettingsId: existing.id } })
+        await tx.business_hours_config.deleteMany({ where: { bookingSettingsId: existing.id } })
+        await tx.payment_method_config.deleteMany({ where: { bookingSettingsId: existing.id } })
+        await tx.notification_templates.deleteMany({ where: { bookingSettingsId: existing.id } })
         // Some test mocks do not implement bookingSettings.delete; fall back to update if not available
         if (typeof (tx as any).bookingSettings.delete === 'function') {
           await (tx as any).bookingSettings.delete({ where: { id: existing.id } })

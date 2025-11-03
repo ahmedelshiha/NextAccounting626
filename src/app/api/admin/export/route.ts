@@ -51,13 +51,13 @@ export const GET = withTenantContext(async (request: NextRequest) => {
     let rows: Record<string, unknown>[] = []
 
     if (entity === 'users') {
-      const users = await prisma.user.findMany({ where: { tenantId: tenantFilter }, select: { id: true, name: true, email: true, role: true, createdAt: true } })
+      const users = await prisma.users.findMany({ where: { tenantId: tenantFilter }, select: { id: true, name: true, email: true, role: true, createdAt: true } })
       rows = users.map(u => ({ id: u.id, name: u.name, email: u.email, role: u.role, createdAt: u.createdAt.toISOString() }))
     } else if (entity === 'bookings') {
-      const bookings = await prisma.booking.findMany({ where: { client: { tenantId: tenantFilter } }, include: { service: { select: { name: true } }, client: { select: { name: true, email: true } } } })
+      const bookings = await prisma.bookings.findMany({ where: { client: { tenantId: tenantFilter } }, include: { service: { select: { name: true } }, client: { select: { name: true, email: true } } } })
       rows = (bookings as any[]).map(b => ({ id: b.id, clientName: b.client?.name ?? b.clientName ?? '', clientEmail: b.client?.email ?? b.clientEmail ?? '', service: b.service?.name ?? '', status: b.status, scheduledAt: b.scheduledAt.toISOString(), duration: b.duration }))
     } else if (entity === 'services') {
-      const services = await prisma.service.findMany({ where: { tenantId: tenantFilter }, select: { id: true, name: true, slug: true, price: true, active: true, category: true } })
+      const services = await prisma.services.findMany({ where: { tenantId: tenantFilter }, select: { id: true, name: true, slug: true, price: true, active: true, category: true } })
       rows = services.map(s => {
         const priceUnknown = s.price as unknown
         let priceStr = ''
@@ -77,10 +77,10 @@ export const GET = withTenantContext(async (request: NextRequest) => {
       const subs = await prisma.newsletter.findMany({ orderBy: { createdAt: 'desc' } })
       rows = subs.map(s => ({ id: s.id, email: s.email, name: s.name ?? '', subscribed: s.subscribed ? 'true' : 'false', createdAt: s.createdAt.toISOString() }))
     } else if (entity === 'posts') {
-      const posts = await prisma.post.findMany({ orderBy: { updatedAt: 'desc' } })
+      const posts = await prisma.posts.findMany({ orderBy: { updatedAt: 'desc' } })
       rows = posts.map(p => ({ id: p.id, title: p.title, slug: p.slug, status: p.status, category: p.category ?? '', published: p.published ? 'true' : 'false', featured: p.featured ? 'true' : 'false', views: p.views ?? 0, publishedAt: p.publishedAt ? p.publishedAt.toISOString() : '', updatedAt: p.updatedAt.toISOString() }))
     } else if (entity === 'payments') {
-      const reqs = await prisma.serviceRequest.findMany({ where: { tenantId: tenantFilter, NOT: { paymentStatus: null } }, include: { client: { select: { name: true, email: true } }, service: { select: { name: true } } }, orderBy: { paymentUpdatedAt: 'desc' } })
+      const reqs = await prisma.service_requests.findMany({ where: { tenantId: tenantFilter, NOT: { paymentStatus: null } }, include: { client: { select: { name: true, email: true } }, service: { select: { name: true } } }, orderBy: { paymentUpdatedAt: 'desc' } })
       rows = reqs.map(r => ({ id: r.id, clientName: r.clientName || r.client?.name || '', clientEmail: r.clientEmail || r.client?.email || '', service: r.service?.name || '', paymentStatus: r.paymentStatus ?? '', paymentProvider: r.paymentProvider ?? '', paymentAmount: typeof r.paymentAmountCents === 'number' ? (r.paymentAmountCents / 100).toFixed(2) : '', paymentCurrency: r.paymentCurrency ?? '', paymentUpdatedAt: r.paymentUpdatedAt ? r.paymentUpdatedAt.toISOString() : '' }))
     } else if (entity === 'invoices') {
       const status = searchParams.get('status')
@@ -93,7 +93,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
         if (createdFrom) where.createdAt.gte = createdFrom
         if (createdTo) where.createdAt.lte = createdTo
       }
-      const invoices = await prisma.invoice.findMany({
+      const invoices = await prisma.invoices.findMany({
         where,
         include: { client: { select: { name: true, email: true } } },
         orderBy: { createdAt: 'desc' },
@@ -123,7 +123,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
         if (dateTo) where.date.lte = dateTo
       }
 
-      const expenses = await prisma.expense.findMany({ where, include: { attachment: { select: { url: true, avStatus: true } } }, orderBy: { date: 'desc' } })
+      const expenses = await prisma.expenses.findMany({ where, include: { attachment: { select: { url: true, avStatus: true } } }, orderBy: { date: 'desc' } })
       rows = expenses.map(e => ({ id: e.id, vendor: e.vendor, category: e.category, status: e.status, amount: (e.amountCents/100).toFixed(2), currency: e.currency, date: e.date.toISOString().slice(0,10), avStatus: e.attachment?.avStatus || '', attachmentUrl: e.attachment?.url || '' }))
     } else {
       return new NextResponse('Unknown entity', { status: 400 })

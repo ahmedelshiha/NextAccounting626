@@ -17,7 +17,7 @@ export const GET = withTenantContext(async (req: Request, { params }: { params: 
       return NextResponse.json({ error: 'Tenant context missing' }, { status: 400 })
     }
 
-    const targetRole = await prisma.customRole.findFirst({
+    const targetRole = await prisma.custom_roles.findFirst({
       where: {
         id: params.id,
         tenantId: ctx.tenantId,
@@ -58,7 +58,7 @@ export const PATCH = withTenantContext(async (req: Request, { params }: { params
     const body = await req.json().catch(() => ({}))
     const { name, description, permissions } = body || {}
 
-    const targetRole = await prisma.customRole.findFirst({
+    const targetRole = await prisma.custom_roles.findFirst({
       where: {
         id: params.id,
         tenantId: ctx.tenantId,
@@ -71,7 +71,7 @@ export const PATCH = withTenantContext(async (req: Request, { params }: { params
 
     // Check if new name is available (if changed)
     if (name && name !== targetRole.name) {
-      const existing = await prisma.customRole.findFirst({
+      const existing = await prisma.custom_roles.findFirst({
         where: {
           name,
           tenantId: ctx.tenantId,
@@ -87,7 +87,7 @@ export const PATCH = withTenantContext(async (req: Request, { params }: { params
       return NextResponse.json({ error: 'At least one permission must be assigned' }, { status: 400 })
     }
 
-    const updated = await prisma.customRole.update({
+    const updated = await prisma.custom_roles.update({
       where: { id: params.id },
       data: {
         ...(name && { name }),
@@ -146,7 +146,7 @@ export const DELETE = withTenantContext(async (req: Request, { params }: { param
       return NextResponse.json({ error: 'Tenant context missing' }, { status: 400 })
     }
 
-    const targetRole = await prisma.customRole.findFirst({
+    const targetRole = await prisma.custom_roles.findFirst({
       where: {
         id: params.id,
         tenantId: ctx.tenantId,
@@ -157,7 +157,7 @@ export const DELETE = withTenantContext(async (req: Request, { params }: { param
       return NextResponse.json({ error: 'Role not found' }, { status: 404 })
     }
 
-    await prisma.customRole.delete({
+    await prisma.custom_roles.delete({
       where: { id: params.id },
     })
 

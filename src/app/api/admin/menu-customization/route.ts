@@ -48,7 +48,7 @@ const _api_GET = async (request: NextRequest): Promise<NextResponse> => {
     }
 
     // Fetch user's customization from database
-    const customization = await prisma.menuCustomization.findUnique({
+    const customization = await prisma.menu_customizations.findUnique({
       where: { userId },
     })
 
@@ -130,7 +130,7 @@ const _api_POST = async (request: NextRequest): Promise<NextResponse> => {
     }
 
     // Upsert customization record in database
-    const customization = await prisma.menuCustomization.upsert({
+    const customization = await prisma.menu_customizations.upsert({
       where: { userId },
       update: {
         sectionOrder: body.sectionOrder as Prisma.InputJsonValue,
@@ -193,7 +193,7 @@ const _api_DELETE = async (request: NextRequest): Promise<NextResponse> => {
     }
 
     // Delete customization record from database
-    await prisma.menuCustomization.delete({
+    await prisma.menu_customizations.delete({
       where: { userId },
     }).catch(() => {
       // Silently ignore if record doesn't exist

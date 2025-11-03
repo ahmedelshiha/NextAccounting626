@@ -31,7 +31,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
       return NextResponse.json({ success: true, message: "Verification email would be sent in production" })
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: ctx.userId as string },
       select: { id: true, email: true, tenantId: true },
     })
@@ -39,7 +39,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 })
 
     // Check if email is already in use by another user in tenant
-    const existing = await prisma.user.findUnique({
+    const existing = await prisma.users.findUnique({
       where: { tenantId_email: { tenantId: user.tenantId, email } },
     })
 

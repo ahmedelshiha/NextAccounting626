@@ -124,13 +124,13 @@ export async function getPrisma(): Promise<PrismaClientType> {
 
 // Default export: a proxy shim that mirrors the PrismaClient surface.
 // Each accessed method defers to the real client via getPrisma().
-// This preserves existing call-sites like prisma.user.findMany() without code changes,
+// This preserves existing call-sites like prisma.users.findMany() without code changes,
 // while complying with eslint no-require-imports.
 const prisma: PrismaClientType = new Proxy(
   {},
   {
     get(_target, prop) {
-      // Return a nested proxy for model access (e.g., prisma.user.create)
+      // Return a nested proxy for model access (e.g., prisma.users.create)
       return new Proxy(
         async function noop() {},
         {
@@ -143,7 +143,7 @@ const prisma: PrismaClientType = new Proxy(
             }
             return value
           },
-          // Handle nested access like prisma.user.findMany
+          // Handle nested access like prisma.users.findMany
           get(_t2, subProp) {
             return new Proxy(
               async function noopMethod() {},

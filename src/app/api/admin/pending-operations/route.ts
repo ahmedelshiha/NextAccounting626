@@ -95,7 +95,7 @@ async function generatePendingOperations(
 ) {
   try {
     // Fetch recently added or updated users for pending approvals
-    const recentUsers = await prisma.user.findMany({
+    const recentUsers = await prisma.users.findMany({
       where: {
         ...tenantFilter(tenantId),
         createdAt: {

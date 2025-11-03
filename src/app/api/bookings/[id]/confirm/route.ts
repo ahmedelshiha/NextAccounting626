@@ -17,11 +17,11 @@ export const POST = withTenantContext(async (request: NextRequest, context: { pa
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const booking = await prisma.booking.findUnique({ where: { id }, include: { client: { select: { id: true, name: true, email: true } }, service: { select: { id: true, name: true, price: true } } } })
+    const booking = await prisma.bookings.findUnique({ where: { id }, include: { client: { select: { id: true, name: true, email: true } }, service: { select: { id: true, name: true, price: true } } } })
 
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
 
-    const updatedBooking = await prisma.booking.update({ where: { id }, data: { status: 'CONFIRMED', confirmed: true }, include: { client: { select: { id: true, name: true, email: true } }, service: { select: { id: true, name: true, price: true } } } })
+    const updatedBooking = await prisma.bookings.update({ where: { id }, data: { status: 'CONFIRMED', confirmed: true }, include: { client: { select: { id: true, name: true, email: true } }, service: { select: { id: true, name: true, price: true } } } })
 
     try {
       await sendBookingConfirmation({

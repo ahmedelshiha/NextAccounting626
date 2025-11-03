@@ -74,7 +74,7 @@ export async function broadcastChatMessage(msg: ChatMessage) {
   // Best-effort persistence: ignore if DB is not configured or table missing
   try {
     const prisma = (await import('@/lib/prisma')).default as any
-    await prisma.chatMessage.create({
+    await prisma.chat_messages.create({
       data: {
         id: msg.id,
         tenantId: msg.tenantId,

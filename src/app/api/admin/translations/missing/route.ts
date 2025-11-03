@@ -52,7 +52,7 @@ export const GET = withTenantContext(async (request) => {
     }
 
     const [keys, total] = await Promise.all([
-      prisma.translationKey.findMany({
+      prisma.translation_keys.findMany({
         where: whereClause,
         select: {
           id: true,
@@ -67,7 +67,7 @@ export const GET = withTenantContext(async (request) => {
         take: limit,
         skip: offset,
       }),
-      prisma.translationKey.count({ where: whereClause }),
+      prisma.translation_keys.count({ where: whereClause }),
     ])
 
     return NextResponse.json({

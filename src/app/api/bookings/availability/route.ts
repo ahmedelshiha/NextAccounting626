@@ -75,7 +75,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
       return NextResponse.json({ error: 'Service ID is required' }, { status: 400 })
     }
 
-    const service = await prisma.service.findUnique({ where: { id: serviceId } })
+    const service = await prisma.services.findUnique({ where: { id: serviceId } })
     if (!service) return NextResponse.json({ error: 'Service not available for booking' }, { status: 404 })
     // Support either string status OR legacy boolean active flag on service
     const hasStatus = typeof (service as any).status === 'string'
@@ -147,7 +147,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
             currency,
             promoCode,
             promoResolver: async (code: string, { serviceId }) => {
-              const svc = await prisma.service.findUnique({ where: { id: serviceId } })
+              const svc = await prisma.services.findUnique({ where: { id: serviceId } })
               if (!svc) return null
               const base = Number(svc.price ?? 0)
               const baseCents = Math.round(base * 100)

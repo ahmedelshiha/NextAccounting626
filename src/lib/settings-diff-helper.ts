@@ -50,10 +50,10 @@ export async function persistSettingChangeDiff({
 
     // Execute both, but don't fail the main operation if they fail
     await Promise.all([
-      prisma.settingChangeDiff.create({ data: diffPayload }).catch((e) => {
+      prisma.setting_change_diffs.create({ data: diffPayload }).catch((e) => {
         console.error(`Failed to create SettingChangeDiff for ${resource}:`, e)
       }),
-      prisma.auditEvent.create({ data: auditPayload }).catch((e) => {
+      prisma.audit_events.create({ data: auditPayload }).catch((e) => {
         console.error(`Failed to create AuditEvent for ${resource}:`, e)
       }),
     ])

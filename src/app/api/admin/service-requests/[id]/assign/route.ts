@@ -29,13 +29,13 @@ export const POST = withTenantContext(async (req: Request, context: { params: Pr
   const parsed = Schema.safeParse(body)
   if (!parsed.success) return respond.badRequest('Invalid payload', zodDetails(parsed.error))
 
-  const existing = await prisma.serviceRequest.findFirst({ where: { id, ...getTenantFilter() } })
+  const existing = await prisma.service_requests.findFirst({ where: { id, ...getTenantFilter() } })
   if (!existing) return respond.notFound('Service request not found')
 
-  const tm = await prisma.teamMember.findUnique({ where: { id: parsed.data.teamMemberId } })
+  const tm = await prisma.team_members.findUnique({ where: { id: parsed.data.teamMemberId } })
   if (!tm) return respond.notFound('Team member not found')
 
-  const updated = await prisma.serviceRequest.update({
+  const updated = await prisma.service_requests.update({
     where: { id },
     data: {
       assignedTeamMemberId: tm.id,

@@ -77,7 +77,7 @@ export class NotificationManagerService {
 
   async queueEmail(workflowId: string, to: string, subject: string, body: string) {
     try {
-      const n = await prisma.workflowNotification.create({
+      const n = await prisma.workflow_notifications.create({
         data: {
           workflowId,
           emailTo: to,
@@ -108,7 +108,7 @@ export class NotificationManagerService {
 
   async markSent(notificationId: string) {
     try {
-      await prisma.workflowNotification.update({
+      await prisma.workflow_notifications.update({
         where: { id: notificationId },
         data: { status: 'SENT', sentAt: new Date() }
       })
@@ -120,7 +120,7 @@ export class NotificationManagerService {
 
   async markFailed(notificationId: string, errorMessage: string) {
     try {
-      await prisma.workflowNotification.update({
+      await prisma.workflow_notifications.update({
         where: { id: notificationId },
         data: { status: 'FAILED', errorMessage }
       })
@@ -132,7 +132,7 @@ export class NotificationManagerService {
 
   async getPendingNotifications(limit: number = 100) {
     try {
-      return await prisma.workflowNotification.findMany({
+      return await prisma.workflow_notifications.findMany({
         where: { status: 'PENDING' },
         take: limit,
         orderBy: { createdAt: 'asc' }

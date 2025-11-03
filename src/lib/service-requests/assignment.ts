@@ -74,7 +74,7 @@ function resolveAssignmentStatus(settings: ServiceRequestSettings) {
 }
 
 export async function autoAssignServiceRequest(serviceRequestId: string) {
-  const request = await prisma.serviceRequest.findUnique({
+  const request = await prisma.service_requests.findUnique({
     where: { id: serviceRequestId },
     include: { service: { select: { category: true, name: true } } },
   })
@@ -94,7 +94,7 @@ export async function autoAssignServiceRequest(serviceRequestId: string) {
     return request
   }
 
-  const teamMembers = await prisma.teamMember
+  const teamMembers = await prisma.team_members
     .findMany({
       where: {
         status: 'active',
@@ -104,7 +104,7 @@ export async function autoAssignServiceRequest(serviceRequestId: string) {
       select: { id: true, name: true, email: true, specialties: true },
     })
     .catch(async () => {
-      return prisma.teamMember.findMany({
+      return prisma.team_members.findMany({
         where: { status: 'active', isAvailable: true },
         select: { id: true, name: true, email: true, specialties: true },
       })
@@ -113,7 +113,7 @@ export async function autoAssignServiceRequest(serviceRequestId: string) {
 
   const workloads: CandidateWorkload[] = await Promise.all(
     teamMembers.map(async (tm) => {
-      const count = await prisma.serviceRequest.count({
+      const count = await prisma.service_requests.count({
         where: {
           assignedTeamMemberId: tm.id,
           status: { in: ACTIVE_STATUSES as unknown as ActiveStatus[] },
@@ -132,7 +132,7 @@ export async function autoAssignServiceRequest(serviceRequestId: string) {
 
   const statusForAssignment = resolveAssignmentStatus(settings)
 
-  const updated = await prisma.serviceRequest.update({
+  const updated = await prisma.service_requests.update({
     where: { id: request.id },
     data: {
       assignedTeamMemberId: candidate.tm.id,

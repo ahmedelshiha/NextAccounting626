@@ -21,7 +21,7 @@ export const GET = withTenantContext(async (request?: Request) => {
     }
 
     const tenantId = ctx.tenantId
-    const rows = await prisma.taskTemplate.findMany({
+    const rows = await prisma.task_templates.findMany({
       where: tenantFilter(tenantId),
       select: { category: true },
       distinct: ['category']

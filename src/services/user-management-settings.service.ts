@@ -486,7 +486,7 @@ export class UserManagementSettingsService {
         return // No changes to log
       }
 
-      await prisma.auditLog.create({
+      await prisma.audit_logs.create({
         data: {
           tenantId,
           userId: userId || null,

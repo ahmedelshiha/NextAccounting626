@@ -76,19 +76,19 @@ export const authOptions: NextAuthOptions = {
         if (previewEmail && previewPassword && inputEmail === previewEmail && inputPassword === previewPassword) {
           // Upsert preview admin user in DB to ensure downstream APIs work
           const hashed = await bcrypt.hash(previewPassword, 12)
-          const user = await prisma.user.upsert({
+          const user = await prisma.users.upsert({
             where: userByTenantEmail(tenantId, inputEmail),
             update: { password: hashed, role: 'ADMIN' as any, name: 'Preview Admin' },
             create: { tenantId, email: inputEmail, name: 'Preview Admin', password: hashed, role: 'ADMIN' as any }
           })
           // Ensure tenant membership exists
-          await prisma.tenantMembership.upsert({
+          await prisma.tenant_memberships.upsert({
             where: { userId_tenantId: { userId: user.id, tenantId } },
             update: { role: 'ADMIN' as any, isDefault: true },
             create: { userId: user.id, tenantId, role: 'ADMIN' as any, isDefault: true }
           }).catch(() => {})
 
-          const tenantMemberships = await prisma.tenantMembership.findMany({ where: { userId: user.id }, include: { tenant: true } }).catch(() => [])
+          const tenantMemberships = await prisma.tenant_memberships.findMany({ where: { userId: user.id }, include: { tenant: true } }).catch(() => [])
           const activeMembership = tenantMemberships.find(m => m.tenantId === tenantId) || tenantMemberships[0] || null
 
           return {
@@ -106,7 +106,7 @@ export const authOptions: NextAuthOptions = {
           }
         }
 
-        const user = await prisma.user.findUnique({ where: userByTenantEmail(tenantId, String(credentials.email as string).toLowerCase()) })
+        const user = await prisma.users.findUnique({ where: userByTenantEmail(tenantId, String(credentials.email as string).toLowerCase()) })
         if (!user || !user.password) {
           // Audit failed attempt without user enumeration
           logAudit({ action: 'auth.login.failed', actorId: null, targetId: null, details: { tenantId, email: String(credentials.email || '').toLowerCase() } }).catch(() => {})
@@ -167,7 +167,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Fetch tenant memberships for the user to populate available tenants
-        let tenantMemberships = await prisma.tenantMembership.findMany({ where: { userId: user.id }, include: { tenant: true } }).catch(() => [])
+        let tenantMemberships = await prisma.tenant_memberships.findMany({ where: { userId: user.id }, include: { tenant: true } }).catch(() => [])
 
         // If this is a SUPER_ADMIN and no tenant membership exists, create one using the user's tenantId (or resolved tenantId)
         try {
@@ -175,14 +175,14 @@ export const authOptions: NextAuthOptions = {
           if (roleNormalized === 'SUPER_ADMIN' && (!tenantMemberships || tenantMemberships.length === 0)) {
             const membershipTenantId = (user as any).tenantId || tenantId
             if (membershipTenantId) {
-              await prisma.tenantMembership.upsert({
+              await prisma.tenant_memberships.upsert({
                 where: { userId_tenantId: { userId: user.id, tenantId: membershipTenantId } },
                 update: { role: 'SUPER_ADMIN' as any, isDefault: true },
                 create: { userId: user.id, tenantId: membershipTenantId, role: 'SUPER_ADMIN' as any, isDefault: true },
               }).catch(() => {})
 
               // Refresh memberships after ensuring the row exists
-              tenantMemberships = await prisma.tenantMembership.findMany({ where: { userId: user.id }, include: { tenant: true } }).catch(() => [])
+              tenantMemberships = await prisma.tenant_memberships.findMany({ where: { userId: user.id }, include: { tenant: true } }).catch(() => [])
             }
           }
         } catch (err) {
@@ -225,7 +225,7 @@ export const authOptions: NextAuthOptions = {
         token.role = (user as any).role
         if (hasDb) {
           try {
-            const dbUser = await prisma.user.findUnique({ where: { id: (user as any).id }, select: { sessionVersion: true } })
+            const dbUser = await prisma.users.findUnique({ where: { id: (user as any).id }, select: { sessionVersion: true } })
             token.sessionVersion = dbUser?.sessionVersion ?? 0
           } catch {
             token.sessionVersion = 0
@@ -263,7 +263,7 @@ export const authOptions: NextAuthOptions = {
       // On subsequent requests, validate token against DB version
       if (!user && token.sub && hasDb) {
         try {
-          const dbUser = await prisma.user.findUnique({ where: { id: token.sub }, select: { sessionVersion: true } })
+          const dbUser = await prisma.users.findUnique({ where: { id: token.sub }, select: { sessionVersion: true } })
           if (dbUser && token.sessionVersion !== dbUser.sessionVersion) {
             // Mark token as invalidated
             const t = token as unknown as { invalidated?: boolean }

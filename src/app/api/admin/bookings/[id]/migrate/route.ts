@@ -13,7 +13,7 @@ export const POST = withTenantContext(async (_request: NextRequest, context: { p
     if (!ctx.role || !hasRole(ctx.role, allowed)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     // Ensure booking exists and belongs to tenant (via client relation until tenantId is on Booking)
-    const booking = await prisma.booking.findFirst({ where: { id, ...(ctx.tenantId && ctx.tenantId !== 'undefined' ? { client: { tenantId: String(ctx.tenantId) } } : {}) } as any })
+    const booking = await prisma.bookings.findFirst({ where: { id, ...(ctx.tenantId && ctx.tenantId !== 'undefined' ? { client: { tenantId: String(ctx.tenantId) } } : {}) } as any })
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
 
     // Create a ServiceRequest from booking data
@@ -28,14 +28,14 @@ export const POST = withTenantContext(async (_request: NextRequest, context: { p
       requirements: { migratedFromBookingId: booking.id },
     }
 
-    const sr = await prisma.serviceRequest.create({ data: {
+    const sr = await prisma.service_requests.create({ data: {
       client: { connect: { id: (booking as any).clientId } },
       service: { connect: { id: (booking as any).serviceId } },
       ...payload,
       tenant: (ctx.tenantId ? { connect: { id: ctx.tenantId } } : undefined),
     } })
 
-    const updated = await prisma.booking.update({ where: { id }, data: { serviceRequest: { connect: { id: sr.id } } } })
+    const updated = await prisma.bookings.update({ where: { id }, data: { serviceRequest: { connect: { id: sr.id } } } })
 
     return NextResponse.json({ success: true, data: { serviceRequest: sr, booking: updated } })
   } catch (error) {

@@ -39,19 +39,19 @@ export const POST = withTenantContext(async (req: Request) => {
   const tenantId = ctx.tenantId
   let targetIds = ids
   try {
-    const scoped = await prisma.serviceRequest.findMany({ where: { id: { in: ids }, ...(tenantFilter(tenantId) as any) }, select: { id: true } })
+    const scoped = await prisma.service_requests.findMany({ where: { id: { in: ids }, ...(tenantFilter(tenantId) as any) }, select: { id: true } })
     targetIds = scoped.map((s) => s.id)
   } catch {}
 
   if (action === 'delete') {
-    await prisma.requestTask.deleteMany({ where: { serviceRequestId: { in: targetIds } } })
-    const result = await prisma.serviceRequest.deleteMany({ where: { id: { in: targetIds } } })
+    await prisma.request_tasks.deleteMany({ where: { serviceRequestId: { in: targetIds } } })
+    const result = await prisma.service_requests.deleteMany({ where: { id: { in: targetIds } } })
     try { await logAudit({ action: 'service-request:bulk:delete', actorId: ctx.userId ?? null, details: { ids, deleted: result.count } }) } catch {}
     return NextResponse.json({ success: true, data: { deleted: result.count } })
   }
 
   if (action === 'status' && status) {
-    const result = await prisma.serviceRequest.updateMany({ where: { id: { in: targetIds } }, data: { status: status as any } })
+    const result = await prisma.service_requests.updateMany({ where: { id: { in: targetIds } }, data: { status: status as any } })
     try { await logAudit({ action: 'service-request:bulk:status', actorId: ctx.userId ?? null, details: { ids, status, updated: result.count } }) } catch {}
     return NextResponse.json({ success: true, data: { updated: result.count } })
   }

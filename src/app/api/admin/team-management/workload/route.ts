@@ -19,10 +19,10 @@ export const GET = withTenantContext(async () => {
   }
 
   try {
-    const members = await prisma.teamMember.findMany({ where: tenantFilter(ctx.tenantId), select: { id: true, isAvailable: true } })
+    const members = await prisma.team_members.findMany({ where: tenantFilter(ctx.tenantId), select: { id: true, isAvailable: true } })
     const activeMembers = members.length
 
-    const byMember = await prisma.serviceRequest.groupBy({
+    const byMember = await prisma.service_requests.groupBy({
       by: ['assignedTeamMemberId', 'priority', 'status'],
       where: { ...tenantFilter(ctx.tenantId), status: { in: ['ASSIGNED', 'IN_PROGRESS', 'COMPLETED'] as any } },
       _count: { _all: true },

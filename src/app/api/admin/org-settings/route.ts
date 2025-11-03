@@ -17,7 +17,7 @@ export const GET = withTenantContext(async () => {
     }
     const scopedFilter = tenantFilter(ctx.tenantId)
     const scope = Object.keys(scopedFilter).length > 0 ? scopedFilter : { tenantId: ctx.tenantId }
-    const row = await prisma.organizationSettings.findFirst({ where: scope }).catch(() => null)
+    const row = await prisma.organization_settings.findFirst({ where: scope }).catch(() => null)
     if (!row) return NextResponse.json({ name: '', tagline: '', description: '', industry: '' })
 
     const out = {
@@ -58,7 +58,7 @@ export const PUT = withTenantContext(async (req: Request) => {
   }
   const scopedFilter = tenantFilter(tenantId)
   const scope = Object.keys(scopedFilter).length > 0 ? scopedFilter : { tenantId }
-  const existing = await prisma.organizationSettings.findFirst({ where: scope }).catch(() => null)
+  const existing = await prisma.organization_settings.findFirst({ where: scope }).catch(() => null)
 
   const rawData = {
     name: parsed.data.general?.name ?? existing?.name ?? '',
@@ -107,8 +107,8 @@ export const PUT = withTenantContext(async (req: Request) => {
     } : {}
 
     const saved = existing
-      ? await prisma.organizationSettings.update({ where: { id: existing.id }, data: updateData as Prisma.OrganizationSettingsUpdateInput })
-      : await prisma.organizationSettings.create({ data: createData as Prisma.OrganizationSettingsCreateInput })
+      ? await prisma.organization_settings.update({ where: { id: existing.id }, data: updateData as Prisma.OrganizationSettingsUpdateInput })
+      : await prisma.organization_settings.create({ data: createData as Prisma.OrganizationSettingsCreateInput })
 
     // Persist change diff and audit event (best-effort)
     try {
@@ -121,7 +121,7 @@ export const PUT = withTenantContext(async (req: Request) => {
       }
       diffPayload.before = beforeData as Prisma.InputJsonValue
       diffPayload.after = normalized as Prisma.InputJsonValue
-      await prisma.settingChangeDiff.create({ data: diffPayload })
+      await prisma.setting_change_diffs.create({ data: diffPayload })
     } catch {}
 
     try {
@@ -133,7 +133,7 @@ export const PUT = withTenantContext(async (req: Request) => {
         details: { category: 'organization' } as Prisma.InputJsonValue,
         ...(actorUserId ? { userId: actorUserId } : {}),
       }
-      await prisma.auditEvent.create({ data: auditPayload })
+      await prisma.audit_events.create({ data: auditPayload })
     } catch {}
 
     try {

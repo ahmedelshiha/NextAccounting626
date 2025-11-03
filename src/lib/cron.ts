@@ -34,7 +34,7 @@ export async function cleanupOldData() {
 
     // Delete old contact submissions (keep for 1 year)
     const oneYearAgo = addDays(new Date(), -365)
-    const deletedSubmissions = await prisma.contactSubmission.deleteMany({
+    const deletedSubmissions = await prisma.contact_submissions.deleteMany({
       where: {
         createdAt: {
           lt: oneYearAgo
@@ -45,7 +45,7 @@ export async function cleanupOldData() {
     // Delete chat messages older than 30 days (if table exists)
     let deletedChat = 0
     try {
-      const res = await prisma.chatMessage.deleteMany({
+      const res = await prisma.chat_messages.deleteMany({
         where: { createdAt: { lt: thirtyDaysAgo } }
       })
       deletedChat = res.count || 0
@@ -72,7 +72,7 @@ export async function updateBookingStatuses() {
     const now = new Date()
     
     // Mark past confirmed bookings as completed
-    const updatedBookings = await prisma.booking.updateMany({
+    const updatedBookings = await prisma.bookings.updateMany({
       where: {
         scheduledAt: {
           lt: now
@@ -103,7 +103,7 @@ export async function generateMonthlyReports() {
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
 
     // Get monthly statistics
-    const bookingsCount = await prisma.booking.count({
+    const bookingsCount = await prisma.bookings.count({
       where: {
         createdAt: {
           gte: startOfMonth,
@@ -112,7 +112,7 @@ export async function generateMonthlyReports() {
       }
     })
 
-    const newUsersCount = await prisma.user.count({
+    const newUsersCount = await prisma.users.count({
       where: {
         createdAt: {
           gte: startOfMonth,
@@ -121,7 +121,7 @@ export async function generateMonthlyReports() {
       }
     })
 
-    const contactSubmissionsCount = await prisma.contactSubmission.count({
+    const contactSubmissionsCount = await prisma.contact_submissions.count({
       where: {
         createdAt: {
           gte: startOfMonth,

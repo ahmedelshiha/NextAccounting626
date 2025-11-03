@@ -17,7 +17,7 @@ export const GET = withTenantContext(async () => {
       return Response.json({ error: 'Tenant context required' }, { status: 400 })
     }
 
-    const users = await prisma.userProfile.findMany({
+    const users = await prisma.user_profiles.findMany({
       where: {
         user: { tenantId },
       },

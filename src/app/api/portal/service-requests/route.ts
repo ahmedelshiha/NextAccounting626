@@ -113,7 +113,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
 
   try {
     const [items, total] = await Promise.all([
-      prisma.serviceRequest.findMany({
+      prisma.service_requests.findMany({
         where,
         include: {
           service: { select: { id: true, name: true, slug: true, category: true } },
@@ -122,7 +122,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
         skip: (page - 1) * limit,
         take: limit,
       }),
-      prisma.serviceRequest.count({ where }),
+      prisma.service_requests.count({ where }),
     ])
 
     return respond.ok(items, { pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } })
@@ -153,14 +153,14 @@ export const GET = withTenantContext(async (request: NextRequest) => {
         ...(resolvedTenantId ? { tenantId: resolvedTenantId } : {}),
       }
       const [items, total] = await Promise.all([
-        prisma.serviceRequest.findMany({
+        prisma.service_requests.findMany({
           where: whereLegacy,
           include: { service: { select: { id: true, name: true, slug: true, category: true } } },
           orderBy: { createdAt: 'desc' },
           skip: (page - 1) * limit,
           take: limit,
         }),
-        prisma.serviceRequest.count({ where: whereLegacy }),
+        prisma.service_requests.count({ where: whereLegacy }),
       ])
       return respond.ok(items, { pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } })
     }
@@ -232,7 +232,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
       const existing = await findIdempotentResult(idemKey, ctx.tenantId ?? undefined)
       if (existing && existing.entityId && existing.entityType === 'ServiceRequest') {
         try {
-          const existingEntity = await prisma.serviceRequest.findUnique({ where: { id: existing.entityId }, include: { service: { select: { id: true, name: true, slug: true, category: true } } } })
+          const existingEntity = await prisma.service_requests.findUnique({ where: { id: existing.entityId }, include: { service: { select: { id: true, name: true, slug: true, category: true } } } })
           if (existingEntity) return respond.created(existingEntity)
         } catch {}
       }
@@ -261,7 +261,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
   // Validate service exists and active
   let svc: any = null
   try {
-    svc = await prisma.service.findUnique({ where: { id: (data as any).serviceId } })
+    svc = await prisma.services.findUnique({ where: { id: (data as any).serviceId } })
     const _status = (svc as any)?.status ? String((svc as any).status).toUpperCase() : undefined
     const _active = (svc as any)?.active
     if (!svc || (_status ? _status !== 'ACTIVE' : _active === false)) {
@@ -330,7 +330,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
     if ((data as any).isBooking) {
       try {
         const bookingType = String((data as any).bookingType || '').toUpperCase()
-        const svcRec = await prisma.service.findUnique({ where: { id: (data as any).serviceId } })
+        const svcRec = await prisma.services.findUnique({ where: { id: (data as any).serviceId } })
         const minAdvanceHours = typeof svcRec?.minAdvanceHours === 'number' ? svcRec!.minAdvanceHours : 0
         if (bookingType !== 'EMERGENCY' && minAdvanceHours > 0 && bookingType !== 'RECURRING') {
           const now = new Date()
@@ -399,7 +399,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
       delete (parentPayload as any).serviceId
       delete (parentPayload as any).tenantId
 
-      const parent = await prisma.serviceRequest.create({
+      const parent = await prisma.service_requests.create({
         data: {
           client: { connect: { id: String(ctx.userId ?? '') } },
           service: { connect: { id: (data as any).serviceId } },
@@ -434,7 +434,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
           tenantId: ctx.tenantId,
         }
 
-        const child = await prisma.serviceRequest.create({
+        const child = await prisma.service_requests.create({
           data: {
             client: { connect: { id: String(ctx.userId ?? '') } },
             service: { connect: { id: (data as any).serviceId } },
@@ -465,7 +465,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
     delete (finalPayload as any).clientId
     delete (finalPayload as any).serviceId
 
-    const created = await prisma.serviceRequest.create({
+    const created = await prisma.service_requests.create({
       data: {
         client: { connect: { id: String(ctx.userId ?? '') } },
         service: { connect: { id: (data as any).serviceId } },
@@ -481,7 +481,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
 
     // Auto-assign if team autoAssign is enabled (prefer team-based autoAssign flag)
     try {
-      const autoCount = await prisma.teamMember.count({ where: { autoAssign: true, isAvailable: true } }).catch(() => 0)
+      const autoCount = await prisma.team_members.count({ where: { autoAssign: true, isAvailable: true } }).catch(() => 0)
       if (autoCount > 0) {
         try {
           const { autoAssignServiceRequest } = await import('@/lib/service-requests/assignment')

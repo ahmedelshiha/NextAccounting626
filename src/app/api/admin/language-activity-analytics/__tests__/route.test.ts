@@ -73,7 +73,7 @@ describe('analytics handler edge cases', () => {
     const now = new Date()
     const earlier = new Date(now.getTime() - 1000 * 60 * 60)
 
-    ;(prisma.auditLog.findMany as any).mockResolvedValueOnce([
+    ;(prisma.audit_logs.findMany as any).mockResolvedValueOnce([
       {
         createdAt: now.toISOString(),
         metadata: 'not-an-object',
@@ -88,7 +88,7 @@ describe('analytics handler edge cases', () => {
       },
     ])
 
-    ;(prisma.userProfile.findMany as any)
+    ;(prisma.user_profiles.findMany as any)
       .mockResolvedValueOnce([
         { preferredLanguage: 'fr', user: { id: 'u5', createdAt: earlier.toISOString() }, timezone: 'Europe/Paris', metadata: { country: 'FR' } },
       ])
@@ -111,12 +111,12 @@ describe('analytics handler edge cases', () => {
   it('applies language filter correctly', async () => {
     const now = new Date()
 
-    ;(prisma.auditLog.findMany as any).mockResolvedValueOnce([
+    ;(prisma.audit_logs.findMany as any).mockResolvedValueOnce([
       { createdAt: now.toISOString(), metadata: { to: 'es' }, userAgent: 'ua', userId: 'ua1' },
       { createdAt: now.toISOString(), metadata: { to: 'fr' }, userAgent: 'ua', userId: 'ua2' },
     ])
 
-    ;(prisma.userProfile.findMany as any)
+    ;(prisma.user_profiles.findMany as any)
       .mockResolvedValueOnce([
         { preferredLanguage: 'es', user: { id: 'ua1', createdAt: now.toISOString() }, timezone: 'Europe/Madrid', metadata: { country: 'ES' } },
         { preferredLanguage: 'fr', user: { id: 'ua2', createdAt: now.toISOString() }, timezone: 'Europe/Paris', metadata: { country: 'FR' } },

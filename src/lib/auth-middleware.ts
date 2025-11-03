@@ -55,7 +55,7 @@ export function withAdminAuth(
       }
 
       // Get user from database
-      const user = await prisma.user.findUnique({
+      const user = await prisma.users.findUnique({
         where: { id: session.user.id },
         select: {
           id: true,
@@ -127,7 +127,7 @@ export function withPermissionAuth(
       }
 
       // Get user from database with permissions
-      const user = await prisma.user.findUnique({
+      const user = await prisma.users.findUnique({
         where: { id: session.user.id },
         select: {
           id: true,
@@ -224,7 +224,7 @@ export function withTenantAuth(
       }
 
       // Get user from database
-      const user = await prisma.user.findUnique({
+      const user = await prisma.users.findUnique({
         where: { id: session.user.id },
         select: {
           id: true,
@@ -294,7 +294,7 @@ export function withPublicAuth(handler: MiddlewareHandler) {
       const session = await getServerSession(authOptions)
 
       if (session?.user?.id) {
-        const user = await prisma.user.findUnique({
+        const user = await prisma.users.findUnique({
           where: { id: session.user.id },
           select: {
             id: true,

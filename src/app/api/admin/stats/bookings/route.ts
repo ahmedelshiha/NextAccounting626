@@ -32,33 +32,33 @@ export const GET = withTenantContext(async (request: NextRequest) => {
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000)
 
-    const total = await prisma.booking.count({ where: tenantFilter(tenantId) })
+    const total = await prisma.bookings.count({ where: tenantFilter(tenantId) })
 
     const [pending, confirmed, completed, cancelled] = await Promise.all([
-      prisma.booking.count({ where: { ...tenantFilter(tenantId), status: 'PENDING' } }),
-      prisma.booking.count({ where: { ...tenantFilter(tenantId), status: 'CONFIRMED' } }),
-      prisma.booking.count({ where: { ...tenantFilter(tenantId), status: 'COMPLETED' } }),
-      prisma.booking.count({ where: { ...tenantFilter(tenantId), status: 'CANCELLED' } })
+      prisma.bookings.count({ where: { ...tenantFilter(tenantId), status: 'PENDING' } }),
+      prisma.bookings.count({ where: { ...tenantFilter(tenantId), status: 'CONFIRMED' } }),
+      prisma.bookings.count({ where: { ...tenantFilter(tenantId), status: 'COMPLETED' } }),
+      prisma.bookings.count({ where: { ...tenantFilter(tenantId), status: 'CANCELLED' } })
     ])
 
-    const today = await prisma.booking.count({
+    const today = await prisma.bookings.count({
       where: { ...tenantFilter(tenantId), scheduledAt: { gte: startOfToday, lt: endOfToday } }
     })
 
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    const thisMonth = await prisma.booking.count({
+    const thisMonth = await prisma.bookings.count({
       where: { ...tenantFilter(tenantId), createdAt: { gte: startOfMonth } }
     })
 
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
-    const lastMonth = await prisma.booking.count({
+    const lastMonth = await prisma.bookings.count({
       where: { ...tenantFilter(tenantId), createdAt: { gte: startOfLastMonth, lte: endOfLastMonth } }
     })
 
     const growth = lastMonth > 0 ? ((thisMonth - lastMonth) / lastMonth) * 100 : 0
 
-    const completedBookings = (await prisma.booking.findMany({
+    const completedBookings = (await prisma.bookings.findMany({
       where: { ...tenantFilter(tenantId), status: 'COMPLETED' },
       include: { service: { select: { price: true } } }
     })) as Array<import('@prisma/client').Booking & { service: { price: unknown } | null }>
@@ -81,7 +81,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
     const revenueGrowth = lastMonthRevenue > 0 ? ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 : 0
 
     const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-    const upcoming = await prisma.booking.count({
+    const upcoming = await prisma.bookings.count({
       where: { ...tenantFilter(tenantId), scheduledAt: { gte: now, lte: nextWeek }, status: { in: ['PENDING', 'CONFIRMED'] } }
     })
 
@@ -90,16 +90,16 @@ export const GET = withTenantContext(async (request: NextRequest) => {
       const start = new Date(now.getTime() - days * 24 * 60 * 60 * 1000)
       const prevStart = new Date(start.getTime() - days * 24 * 60 * 60 * 1000)
 
-      const bookingsInRange = await prisma.booking.count({ where: { ...tenantFilter(tenantId), createdAt: { gte: start } } })
-      const bookingsPrevRange = await prisma.booking.count({ where: { ...tenantFilter(tenantId), createdAt: { gte: prevStart, lt: start } } })
+      const bookingsInRange = await prisma.bookings.count({ where: { ...tenantFilter(tenantId), createdAt: { gte: start } } })
+      const bookingsPrevRange = await prisma.bookings.count({ where: { ...tenantFilter(tenantId), createdAt: { gte: prevStart, lt: start } } })
 
-      const completedInRange = (await prisma.booking.findMany({
+      const completedInRange = (await prisma.bookings.findMany({
         where: { ...tenantFilter(tenantId), status: 'COMPLETED', createdAt: { gte: start } },
         include: { service: { select: { price: true } } }
       })) as Array<import('@prisma/client').Booking & { service: { price: unknown } | null }>
       const revenueInRange = sumDecimals(completedInRange.map(b => b?.service?.price as import('@/lib/decimal-utils').DecimalLike))
 
-      const completedPrevRange = (await prisma.booking.findMany({
+      const completedPrevRange = (await prisma.bookings.findMany({
         where: { ...tenantFilter(tenantId), status: 'COMPLETED', createdAt: { gte: prevStart, lt: start } },
         include: { service: { select: { price: true } } }
       })) as Array<import('@prisma/client').Booking & { service: { price: unknown } | null }>

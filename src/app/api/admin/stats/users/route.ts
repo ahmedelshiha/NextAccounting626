@@ -53,14 +53,14 @@ export const GET = withTenantContext(async (request: NextRequest) => {
 
     const statsPromise = Promise.all([
       // Get all users with role aggregation (single query)
-      prisma.user.groupBy({
+      prisma.users.groupBy({
         by: ['role'],
         where: tenantFilter(tenantId),
         _count: { id: true }
       }),
 
       // Get top 5 clients by bookings with minimal data
-      prisma.user.findMany({
+      prisma.users.findMany({
         where: { ...tenantFilter(tenantId), role: 'CLIENT' },
         select: {
           id: true,
@@ -86,7 +86,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
       ` as Promise<Array<{ month: Date; count: bigint }>>,
 
       // Get users with recent bookings (last 30 days)
-      prisma.user.count({
+      prisma.users.count({
         where: {
           ...tenantFilter(tenantId),
           bookings: { some: { createdAt: { gte: thirtyDaysAgo } } }
@@ -96,10 +96,10 @@ export const GET = withTenantContext(async (request: NextRequest) => {
       // Get ranged stats if requested
       days > 0
         ? Promise.all([
-            prisma.user.count({
+            prisma.users.count({
               where: { ...tenantFilter(tenantId), createdAt: { gte: new Date(now.getTime() - days * 24 * 60 * 60 * 1000) } }
             }),
-            prisma.user.count({
+            prisma.users.count({
               where: {
                 ...tenantFilter(tenantId),
                 createdAt: {
@@ -148,14 +148,14 @@ export const GET = withTenantContext(async (request: NextRequest) => {
     const staff = teamMembers + teamLeads
 
     // Get users created this month and last month
-    const newThisMonth = await prisma.user.count({
+    const newThisMonth = await prisma.users.count({
       where: {
         ...tenantFilter(tenantId),
         createdAt: { gte: startOfMonth, lt: now }
       }
     })
 
-    const newLastMonth = await prisma.user.count({
+    const newLastMonth = await prisma.users.count({
       where: {
         ...tenantFilter(tenantId),
         createdAt: { gte: startOfLastMonth, lt: endOfLastMonth }

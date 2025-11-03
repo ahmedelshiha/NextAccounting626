@@ -11,7 +11,7 @@ export const GET = withTenantContext(async (request: NextRequest, context: { par
     const ctx = requireTenantContext()
     if (!ctx.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const booking = await prisma.booking.findUnique({ where: { id }, select: { id: true, clientId: true, status: true } })
+    const booking = await prisma.bookings.findUnique({ where: { id }, select: { id: true, clientId: true, status: true } })
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
 
     if (ctx.role === 'CLIENT' && booking.clientId !== ctx.userId) {

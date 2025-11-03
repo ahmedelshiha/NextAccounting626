@@ -19,7 +19,7 @@ const _api_POST = async (request: Request) => {
 
   const { serviceId, scheduledAt, duration, currency, promoCode, bookingType } = parsed.data
   try {
-    const svc = await prisma.service.findUnique({ where: { id: serviceId } })
+    const svc = await prisma.services.findUnique({ where: { id: serviceId } })
     const _status = (svc as any)?.status ? String((svc as any).status).toUpperCase() : undefined
     const _active = (svc as any)?.active
     if (!svc || (_status ? _status !== 'ACTIVE' : _active === false)) return respond.notFound('Service not found or inactive')
@@ -37,7 +37,7 @@ const _api_POST = async (request: Request) => {
         promoCode: (promoCode || '').trim() || undefined,
         emergencySurchargePercent: emergencyPct,
         promoResolver: async (code: string, { serviceId }) => {
-          const service = await prisma.service.findUnique({ where: { id: serviceId } })
+          const service = await prisma.services.findUnique({ where: { id: serviceId } })
           if (!service) return null
           const base = Number(service.price ?? 0)
           const baseCents = Math.round(base * 100)

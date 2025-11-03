@@ -28,7 +28,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
 
     const where: Prisma.ServiceWhereInput = { active: true, ...(tenantFilter(tenantId) as any) }
 
-    const rows = await prisma.service.findMany({
+    const rows = await prisma.services.findMany({
       where,
       select: { id: true, name: true, shortDesc: true, price: true, duration: true, updatedAt: true },
       orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }],

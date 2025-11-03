@@ -24,7 +24,7 @@ export const GET = withTenantContext(async (request: Request) => {
     const where: any = {}
     if (memberId) where.assignedTeamMemberId = String(memberId)
 
-    const rows = await prisma.serviceRequest.findMany({
+    const rows = await prisma.service_requests.findMany({
       where: { ...where, ...tenantFilter(ctx.tenantId) },
       select: {
         id: true,

@@ -32,7 +32,7 @@ export const GET = withTenantContext(async (request: Request) => {
       return NextResponse.json({ user })
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: ctx.userId as string },
       select: { id: true, name: true, email: true, role: true }
     })
@@ -73,7 +73,7 @@ export const PATCH = withTenantContext(async (request: Request) => {
       return NextResponse.json({ error: 'Current password is required to change email or password' }, { status: 400 })
     }
 
-    const currentUser = await prisma.user.findUnique({
+    const currentUser = await prisma.users.findUnique({
       where: { id: ctx.userId as string },
       select: { id: true, password: true, email: true, tenantId: true }
     })
@@ -94,7 +94,7 @@ export const PATCH = withTenantContext(async (request: Request) => {
     if (parsed.data.name) updates.name = parsed.data.name
     if (changingEmail) {
       // check uniqueness within tenant
-      const exists = await prisma.user.findUnique({
+      const exists = await prisma.users.findUnique({
         where: { tenantId_email: { tenantId: currentUser.tenantId as string, email: parsed.data.email as string } }
       })
       if (exists && exists.id !== ctx.userId) {
@@ -113,7 +113,7 @@ export const PATCH = withTenantContext(async (request: Request) => {
     }
 
     // Increment sessionVersion to invalidate existing JWTs
-    const updated = await prisma.user.update({
+    const updated = await prisma.users.update({
       where: { id: ctx.userId as string },
       data: { ...updates, sessionVersion: { increment: 1 } },
       select: { id: true, name: true, email: true, sessionVersion: true }
@@ -155,7 +155,7 @@ export const DELETE = withTenantContext(async (request: Request) => {
     }
 
     // Fetch user including password hash
-    const user = await prisma.user.findUnique({ where: { id: ctx.userId as string }, select: { id: true, password: true } })
+    const user = await prisma.users.findUnique({ where: { id: ctx.userId as string }, select: { id: true, password: true } })
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
     if (!user.password) {
@@ -171,7 +171,7 @@ export const DELETE = withTenantContext(async (request: Request) => {
     const userId = ctx.userId as string
 
     // Delete the user. Cascades will remove related accounts, sessions, bookings, etc.
-    await prisma.user.delete({ where: { id: userId } })
+    await prisma.users.delete({ where: { id: userId } })
 
     await logAudit({ action: 'user.delete', actorId: userId, targetId: userId })
 

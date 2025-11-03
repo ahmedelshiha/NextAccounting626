@@ -57,7 +57,7 @@ const getCachedCalendar = withCache<any>(
       ...(tenantId ? { service: { tenantId } } : {}),
     }
 
-    const bookings = await prisma.booking.findMany({
+    const bookings = await prisma.bookings.findMany({
       where: bookingWhere,
       include: {
         service: { select: { name: true } },

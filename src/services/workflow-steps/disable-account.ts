@@ -9,7 +9,7 @@ export class DisableAccountStepHandler extends BaseStepHandler {
     const { workflowId } = context
 
     try {
-      const workflow = await prisma.userWorkflow.findUnique({
+      const workflow = await prisma.user_workflows.findUnique({
         where: { id: workflowId },
         include: { user: true }
       })
@@ -20,12 +20,12 @@ export class DisableAccountStepHandler extends BaseStepHandler {
 
       const disableDate = new Date()
 
-      const profile = await prisma.userProfile.findUnique({
+      const profile = await prisma.user_profiles.findUnique({
         where: { userId: workflow.user.id }
       })
 
       if (profile) {
-        await prisma.userProfile.update({
+        await prisma.user_profiles.update({
           where: { userId: workflow.user.id },
           data: { lockoutUntil: new Date('2099-12-31') }
         })

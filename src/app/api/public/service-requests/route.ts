@@ -52,15 +52,15 @@ const _api_POST = async (request: NextRequest) => {
 
   try {
     // Validate service exists and is active (status = ACTIVE)
-    const service = await prisma.service.findUnique({ where: { id: data.serviceId }, select: { id: true, name: true, status: true } })
+    const service = await prisma.services.findUnique({ where: { id: data.serviceId }, select: { id: true, name: true, status: true } })
     if (!service || String((service as any).status).toUpperCase() !== 'ACTIVE') {
       return respond.badRequest('Service not found or inactive')
     }
 
     // Find or create user by email as CLIENT, tenant-scoped
-    let user = await prisma.user.findUnique({ where: userByTenantEmail(tenantId, data.email) })
+    let user = await prisma.users.findUnique({ where: userByTenantEmail(tenantId, data.email) })
     if (!user) {
-      user = await prisma.user.create({ data: withTenant({ email: data.email, name: data.name, role: 'CLIENT' as any }, tenantId) })
+      user = await prisma.users.create({ data: withTenant({ email: data.email, name: data.name, role: 'CLIENT' as any }, tenantId) })
     }
 
     // Generate title if missing
@@ -83,7 +83,7 @@ const _api_POST = async (request: NextRequest) => {
     const { clientId: _clientId, serviceId: _serviceId, tenantId: tenantForCreate, ...payload } = createData
     // use nested connect for relations instead of direct foreign keys
 
-    const created = await prisma.serviceRequest.create({
+    const created = await prisma.service_requests.create({
       data: {
         client: { connect: { id: user.id } },
         service: { connect: { id: data.serviceId } },

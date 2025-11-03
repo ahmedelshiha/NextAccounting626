@@ -14,7 +14,7 @@ export const GET = withTenantContext(async () => {
 
     const tenantId = ctx.tenantId as string
 
-    const formats = await prisma.regionalFormat.findMany({
+    const formats = await prisma.regional_formats.findMany({
       where: { tenantId },
       orderBy: { languageCode: 'asc' },
     })
@@ -53,7 +53,7 @@ export const PUT = withTenantContext(async (req: Request) => {
       return Response.json({ error: 'Language code is required' }, { status: 400 })
     }
 
-    const format = await prisma.regionalFormat.upsert({
+    const format = await prisma.regional_formats.upsert({
       where: {
         tenantId_languageCode: {
           tenantId,

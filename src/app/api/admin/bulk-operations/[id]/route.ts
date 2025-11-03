@@ -170,7 +170,7 @@ export const DELETE = withTenantContext(async (
     }
 
     // Delete the operation (cascade delete will handle results and history)
-    await prisma.bulkOperation.delete({
+    await prisma.bulk_operations.delete({
       where: { id: params.id }
     })
 

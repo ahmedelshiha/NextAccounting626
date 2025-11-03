@@ -16,7 +16,7 @@ export const GET = withTenantContext(async (req: NextRequest, context: { params:
   if (!ctx.userId) return respond.unauthorized()
 
   try {
-    const item = await prisma.serviceRequest.findUnique({
+    const item = await prisma.service_requests.findUnique({
       where: { id },
       include: {
         service: { select: { id: true, name: true, slug: true, category: true } },
@@ -63,7 +63,7 @@ export const PATCH = withTenantContext(async (req: NextRequest, context: { param
   if (body.action === 'cancel') allowed.status = 'CANCELLED'
 
   try {
-    const existing = await prisma.serviceRequest.findUnique({ where: { id }, select: { clientId: true, status: true, tenantId: true } })
+    const existing = await prisma.service_requests.findUnique({ where: { id }, select: { clientId: true, status: true, tenantId: true } })
     if (!existing || existing.clientId !== ctx.userId) return respond.notFound('Service request not found')
     if (isMultiTenancyEnabled() && ctx.tenantId && (existing as any).tenantId && (existing as any).tenantId !== ctx.tenantId) return respond.notFound('Service request not found')
 
@@ -76,7 +76,7 @@ export const PATCH = withTenantContext(async (req: NextRequest, context: { param
 
     if (allowed.status === 'CANCELLED' && ['IN_PROGRESS','COMPLETED','CANCELLED'].includes(existing.status as any)) return respond.badRequest('Cannot cancel at current status')
 
-    const updated = await prisma.serviceRequest.update({ where: { id }, data: allowed })
+    const updated = await prisma.service_requests.update({ where: { id }, data: allowed })
     try { const { realtimeService } = await import('@/lib/realtime-enhanced'); realtimeService.emitServiceRequestUpdate(id) } catch {}
     return respond.ok(updated)
   } catch (e: any) {

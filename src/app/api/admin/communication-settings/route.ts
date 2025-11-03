@@ -65,9 +65,9 @@ export const PUT = withTenantContext(async (req: Request) => {
     }
 
     try {
-      await prisma.settingChangeDiff.create({ data: diffPayload })
+      await prisma.setting_change_diffs.create({ data: diffPayload })
     } catch {}
-    try { await prisma.auditEvent.create({ data: auditPayload }) } catch {}
+    try { await prisma.audit_events.create({ data: auditPayload }) } catch {}
 
     return NextResponse.json(updated)
   } catch (e) {

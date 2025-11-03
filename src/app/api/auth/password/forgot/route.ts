@@ -26,7 +26,7 @@ const _api_POST = async (req: NextRequest) => {
     const tenantId = await getResolvedTenantId(req)
     const email = parse.data.email.toLowerCase()
 
-    const user = await prisma.user.findUnique({ where: userByTenantEmail(tenantId, email), select: { id: true, email: true, name: true } })
+    const user = await prisma.users.findUnique({ where: userByTenantEmail(tenantId, email), select: { id: true, email: true, name: true } })
 
     // Always respond with ok to prevent user enumeration
     if (!user) return NextResponse.json({ ok: true })
@@ -37,10 +37,10 @@ const _api_POST = async (req: NextRequest) => {
     const identifier = `${tenantId}:${email}:password_reset`
 
     // Cleanup previous tokens for this identifier
-    await prisma.verificationToken.deleteMany({ where: { identifier } }).catch(() => {})
+    await prisma.verificationtokens.deleteMany({ where: { identifier } }).catch(() => {})
 
     const expires = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
-    await prisma.verificationToken.create({ data: { identifier, token: hashed, expires } })
+    await prisma.verificationtokens.create({ data: { identifier, token: hashed, expires } })
 
     // Compose reset URL
     const origin = req.nextUrl.origin

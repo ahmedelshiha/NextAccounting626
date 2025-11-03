@@ -9,7 +9,7 @@ export class CreateAccountStepHandler extends BaseStepHandler {
     const { config, userId } = context
 
     try {
-      const workflow = await prisma.userWorkflow.findUnique({
+      const workflow = await prisma.user_workflows.findUnique({
         where: { id: context.workflowId },
         include: { user: true }
       })
@@ -21,7 +21,7 @@ export class CreateAccountStepHandler extends BaseStepHandler {
       const user = workflow.user
 
       if (!user.emailVerified) {
-        await prisma.user.update({
+        await prisma.users.update({
           where: { id: user.id },
           data: { emailVerified: new Date() }
         })

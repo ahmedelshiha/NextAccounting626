@@ -207,7 +207,7 @@ async function handlePUT(request: AuthenticatedRequest) {
     })
 
     // Also create the legacy settingChangeDiff record for backward compatibility
-    await prisma.settingChangeDiff.create({
+    await prisma.setting_change_diffs.create({
       data: {
         tenantId,
         userId,

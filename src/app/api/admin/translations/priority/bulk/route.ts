@@ -21,7 +21,7 @@ export const POST = withTenantContext(async (request) => {
     for (const it of items) {
       const { key, languageCode, priority = 'MEDIUM', status = 'OPEN', dueDate, assignedToUserId, notes } = it
       if (!key) continue
-      const upserted = await prisma.translationPriority.upsert({
+      const upserted = await prisma.translation_priorities.upsert({
         where: { tenantId_key_languageCode: { tenantId: ctx.tenantId, key, languageCode: languageCode ?? null } },
         update: {
           priority,

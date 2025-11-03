@@ -60,7 +60,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
 
     if (includePrice) {
       const { calculateServicePrice } = await import('@/lib/booking/pricing')
-      const svc = await prisma.service.findFirst({ where: { id: serviceId, ...getTenantFilter() } })
+      const svc = await prisma.services.findFirst({ where: { id: serviceId, ...getTenantFilter() } })
       const slotMinutes = duration ?? Math.max(15, svc?.duration ?? 60)
       const enriched = await Promise.all(slots.map(async (s) => {
         const breakdown = await calculateServicePrice({ serviceId, scheduledAt: new Date(s.start), durationMinutes: slotMinutes, options: { currency } })

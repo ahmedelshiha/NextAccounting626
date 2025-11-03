@@ -83,7 +83,7 @@ export async function getAllLanguages(): Promise<LanguageConfig[]> {
     }
 
     // Fetch from database
-    const languages = await prisma.language.findMany()
+    const languages = await prisma.languages.findMany()
     const config = languages.map((lang) => ({
       code: lang.code,
       name: lang.name,
@@ -195,7 +195,7 @@ export async function validateLanguageCode(code: string): Promise<boolean> {
  */
 export async function upsertLanguage(code: string, data: Partial<LanguageConfig>): Promise<LanguageConfig> {
   try {
-    const lang = await prisma.language.upsert({
+    const lang = await prisma.languages.upsert({
       where: { code },
       create: {
         code,
@@ -248,7 +248,7 @@ export async function deleteLanguage(code: string): Promise<void> {
     }
 
     // Check if any users have this language set
-    const usersWithLanguage = await prisma.userProfile.count({
+    const usersWithLanguage = await prisma.user_profiles.count({
       where: { preferredLanguage: code },
     })
 
@@ -258,7 +258,7 @@ export async function deleteLanguage(code: string): Promise<void> {
       )
     }
 
-    await prisma.language.delete({ where: { code } })
+    await prisma.languages.delete({ where: { code } })
 
     // Invalidate cache
     languageCache = null
@@ -285,7 +285,7 @@ export async function toggleLanguageStatus(code: string): Promise<LanguageConfig
       throw new Error(`Language ${code} not found`)
     }
 
-    const updated = await prisma.language.update({
+    const updated = await prisma.languages.update({
       where: { code },
       data: { enabled: !current.enabled },
     })

@@ -12,14 +12,14 @@ export const POST = withTenantContext(async (_req: Request, context: { params: P
   const ctx = requireTenantContext()
 
   try {
-    const sr = await prisma.serviceRequest.findUnique({ where: { id }, select: { id: true, clientId: true, tenantId: true } })
+    const sr = await prisma.service_requests.findUnique({ where: { id }, select: { id: true, clientId: true, tenantId: true } })
     if (!sr || sr.clientId !== ctx.userId) return respond.notFound('Service request not found')
     if ((sr as any).tenantId && (sr as any).tenantId !== ctx.tenantId) return respond.notFound('Service request not found')
 
-    const booking = await prisma.booking.findFirst({ where: { serviceRequestId: id }, include: { client: { select: { name: true, email: true } }, service: { select: { name: true, price: true } } } })
+    const booking = await prisma.bookings.findFirst({ where: { serviceRequestId: id }, include: { client: { select: { name: true, email: true } }, service: { select: { name: true, price: true } } } })
     if (!booking) return respond.badRequest('No linked booking to confirm')
 
-    const updated = await prisma.booking.update({ where: { id: booking.id }, data: { status: 'CONFIRMED', confirmed: true } as any, include: { client: { select: { name: true, email: true } }, service: { select: { name: true, price: true } } } })
+    const updated = await prisma.bookings.update({ where: { id: booking.id }, data: { status: 'CONFIRMED', confirmed: true } as any, include: { client: { select: { name: true, email: true } }, service: { select: { name: true, price: true } } } })
 
     try { await logAudit({ action: 'portal:service-request:confirm', actorId: String(ctx.userId) ?? null, targetId: String(id), details: { bookingId: booking.id } }) } catch {}
 

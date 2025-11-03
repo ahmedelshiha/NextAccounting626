@@ -18,7 +18,7 @@ export const POST = withTenantContext(async (_request: Request, { params }: { pa
   const id = params.id
   try {
     try {
-      const wf = await prisma.userWorkflow.findFirst({ where: { id, tenantId: ctx.tenantId }, include: { steps: true } })
+      const wf = await prisma.user_workflows.findFirst({ where: { id, tenantId: ctx.tenantId }, include: { steps: true } })
       if (!wf) return respond.notFound('Workflow not found')
       const estimatedSeconds = wf.steps.length * 5
       return NextResponse.json({

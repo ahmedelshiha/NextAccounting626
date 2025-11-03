@@ -17,7 +17,7 @@ const updateTeamMember = async (request: Request, context: any) => {
     const updates: any = {}
     const allowed = ['name', 'email', 'role', 'department', 'title', 'status', 'isAvailable', 'userId', 'workingHours', 'specialties', 'phone', 'certifications', 'availability', 'notes']
     for (const k of allowed) if (k in body) updates[k] = (body as any)[k]
-    const updated = await prisma.teamMember.update({ where: { id }, data: updates as any })
+    const updated = await prisma.team_members.update({ where: { id }, data: updates as any })
     return NextResponse.json(updated)
   } catch (err) {
     console.error('Update /api/admin/team-members/[id] error', err)
@@ -37,7 +37,7 @@ export const DELETE = withTenantContext(async (request: Request, context: any) =
   const params = context?.params || context
   try {
     const id = params.id
-    await prisma.teamMember.delete({ where: { id } })
+    await prisma.team_members.delete({ where: { id } })
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('DELETE /api/admin/team-members/[id] error', err)
@@ -54,7 +54,7 @@ export const GET = withTenantContext(async (request: Request, context: any) => {
   const params = context?.params || context
   try {
     const id = params.id
-    const member = await prisma.teamMember.findUnique({ where: { id } })
+    const member = await prisma.team_members.findUnique({ where: { id } })
     if (!member) return NextResponse.json({ error: 'Not found' }, { status: 404 })
     return NextResponse.json({ teamMember: member })
   } catch (err) {

@@ -20,7 +20,7 @@ export const GET = withTenantContext(async (request: NextRequest, context: { par
       where.published = true
     }
 
-    const post = await prisma.post.findFirst({
+    const post = await prisma.posts.findFirst({
       where,
       include: { author: { select: { id: true, name: true, image: true } } },
     })
@@ -29,7 +29,7 @@ export const GET = withTenantContext(async (request: NextRequest, context: { par
       return NextResponse.json({ error: 'Post not found' }, { status: 404 })
     }
 
-    await prisma.post.update({
+    await prisma.posts.update({
       where: { id: post.id },
       data: { views: { increment: 1 } },
     })
@@ -77,7 +77,7 @@ export const PUT = withTenantContext(async (request: NextRequest, context: { par
     } = body
 
     const tenantId = getTenantFromRequest(request as any)
-    const existingPost = await prisma.post.findFirst({ where: { slug, ...(tenantFilter(tenantId) as any) } })
+    const existingPost = await prisma.posts.findFirst({ where: { slug, ...(tenantFilter(tenantId) as any) } })
     if (!existingPost) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 })
     }
@@ -118,7 +118,7 @@ export const PUT = withTenantContext(async (request: NextRequest, context: { par
       updateData.published = true
     }
 
-    const post = await prisma.post.update({
+    const post = await prisma.posts.update({
       where: { id: existingPost.id },
       data: updateData,
       include: { author: { select: { id: true, name: true, image: true } } },
@@ -141,10 +141,10 @@ export const DELETE = withTenantContext(async (request: NextRequest, context: { 
 
     const { slug } = await context.params
     const tenantId = getTenantFromRequest(request as any)
-    const existing = await prisma.post.findFirst({ where: { slug, ...(tenantFilter(tenantId) as any) } })
+    const existing = await prisma.posts.findFirst({ where: { slug, ...(tenantFilter(tenantId) as any) } })
     if (!existing) return NextResponse.json({ error: 'Post not found' }, { status: 404 })
 
-    await prisma.post.delete({ where: { id: existing.id } })
+    await prisma.posts.delete({ where: { id: existing.id } })
     return NextResponse.json({ message: 'Post deleted successfully' })
   } catch (error) {
     console.error('Error deleting post:', error)

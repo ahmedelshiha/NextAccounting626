@@ -62,7 +62,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
 
     let user
     try {
-      user = await prisma.user.findFirst({
+      user = await prisma.users.findFirst({
         where: { email: email, tenantId: tid },
         include: { userProfile: true },
       })
@@ -275,7 +275,7 @@ export const PUT = withTenantContext(async (request: NextRequest) => {
 
     let user
     try {
-      user = await prisma.user.findFirst({ where: { email: email, tenantId: tid } })
+      user = await prisma.users.findFirst({ where: { email: email, tenantId: tid } })
     } catch (dbError) {
       const dbMsg = dbError instanceof Error ? dbError.message : String(dbError)
       const sanitizedPayload = sanitizePayloadForLogging(validationResult.data)
@@ -310,7 +310,7 @@ export const PUT = withTenantContext(async (request: NextRequest) => {
     // Update or create user profile with preferences
     let updatedProfile
     try {
-      updatedProfile = await prisma.userProfile.upsert({
+      updatedProfile = await prisma.user_profiles.upsert({
         where: { userId: user.id },
         create: {
           userId: user.id,

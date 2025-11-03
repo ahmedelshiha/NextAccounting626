@@ -21,7 +21,7 @@ export const GET = withTenantContext(async () => {
       ] as any,
     }
 
-    const count = await prisma.serviceRequest.count({ where })
+    const count = await prisma.service_requests.count({ where })
 
     return NextResponse.json({ success: true, count })
   } catch (error) {
