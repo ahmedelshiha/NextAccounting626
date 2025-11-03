@@ -11,3 +11,5 @@ export { useFilterUsers, type FilterOptions, type FilterConfig } from './useFilt
 export { useUnifiedUserService } from './useUnifiedUserService'
 export { useEntityForm, type FormMode, type ValidationRule, type FieldValidation, type EntityFormConfig } from './useEntityForm'
 export { useServerSideFiltering, type ServerFilterOptions, type ServerFilterResponse, type UseServerSideFilteringState } from './useServerSideFiltering'
+export { useFilterBuilder, type UseFilterBuilderReturn } from './useFilterBuilder'
+export { useFilterPresets, type UseFilterPresetsReturn } from './useFilterPresets'
