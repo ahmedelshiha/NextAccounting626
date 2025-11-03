@@ -11,10 +11,17 @@ const REACT_MEMO = typeof Symbol === 'function' ? Symbol.for('react.memo') : nul
 
 const mergeIconClass = (existing?: string) => [ICON_CLASS, existing].filter(Boolean).join(' ')
 
+// Sanitize icon to a component reference if a React element was passed
+const sanitizeIcon = (icon?: any) => {
+  if (!icon) return icon
+  if (React.isValidElement(icon) && (icon as any).type) return (icon as any).type
+  return icon
+}
+
 // Helper to render icon (handles both IconType and ReactNode)
 const renderIcon = (icon?: IconType | React.ReactNode) => {
   if (!icon) return null
-  
+
   try {
     // If it's a function (IconType), render it as a component
     if (typeof icon === 'function') {
@@ -70,14 +77,14 @@ const renderActionButton = (action: ActionItem, isPrimary: boolean = false) => {
   const primaryClasses = "text-white bg-green-600 hover:bg-green-700"
   const secondaryClasses = "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
   const classes = `${baseClasses} ${isPrimary ? primaryClasses : secondaryClasses}`
-  
+
   const content = (
     <>
       {renderIcon(action.icon)}
       {action.label}
     </>
   )
-  
+
   // If href is provided, render as Link
   if (action.href) {
     return (
@@ -86,7 +93,7 @@ const renderActionButton = (action: ActionItem, isPrimary: boolean = false) => {
       </Link>
     )
   }
-  
+
   // Otherwise render as button with onClick
   return (
     <button onClick={action.onClick} className={classes} disabled={action.disabled}>
@@ -95,25 +102,35 @@ const renderActionButton = (action: ActionItem, isPrimary: boolean = false) => {
   )
 }
 
-export default function PageHeader({ title, subtitle, primaryAction, secondaryActions = [] }: { title: string; subtitle?: string; primaryAction?: ActionItem; secondaryActions?: ActionItem[] }) {
-  // Development-only validation
+export default function PageHeader({ title, subtitle, primaryAction, secondaryActions = [] }: { title: string; subtitle?: string; primaryAction?: ActionItem | ActionItem[]; secondaryActions?: ActionItem[] }) {
+  // Normalize actions and sanitize icons
+  const safePrimaryArray = Array.isArray(primaryAction) ? (primaryAction as ActionItem[]) : undefined
+  const normalizedPrimary = (safePrimaryArray ? safePrimaryArray[0] : (primaryAction as ActionItem | undefined))
+    ? { ...(safePrimaryArray ? safePrimaryArray[0] : (primaryAction as ActionItem)), icon: sanitizeIcon((safePrimaryArray ? safePrimaryArray[0] : (primaryAction as any))?.icon) }
+    : undefined
+
+  const normalizedSecondary = (Array.isArray(secondaryActions) ? secondaryActions : [])
+    .filter((a) => a && typeof a === 'object')
+    .map((a) => ({ ...(a as ActionItem), icon: sanitizeIcon((a as any).icon) }))
+
+  // Development-only validation (run against normalized values)
   React.useEffect(() => {
-    devValidateProps({ primaryAction, secondaryActions }, 'PageHeader')
-    
-    if (primaryAction) {
-      const validation = validateActionItem(primaryAction, 'PageHeader.primaryAction')
+    devValidateProps({ primaryAction: normalizedPrimary, secondaryActions: normalizedSecondary }, 'PageHeader')
+
+    if (normalizedPrimary) {
+      const validation = validateActionItem(normalizedPrimary, 'PageHeader.primaryAction')
       if (!validation.isValid) {
         console.error('🚨 PageHeader: Invalid primaryAction:', validation.errors)
       }
     }
-    
-    secondaryActions.forEach((action, index) => {
+
+    normalizedSecondary.forEach((action, index) => {
       const validation = validateActionItem(action, `PageHeader.secondaryActions[${index}]`)
       if (!validation.isValid) {
         console.error(`🚨 PageHeader: Invalid secondaryAction[${index}]:`, validation.errors)
       }
     })
-  }, [primaryAction, secondaryActions])
+  }, [normalizedPrimary, normalizedSecondary])
 
   return (
     <div className="bg-white border-b border-gray-200 px-6 py-6 mb-6 -mx-6 -mt-4">
@@ -123,12 +140,12 @@ export default function PageHeader({ title, subtitle, primaryAction, secondaryAc
           {subtitle && <p className="mt-1 text-sm text-gray-600">{subtitle}</p>}
         </div>
         <div className="flex items-center gap-3">
-          {secondaryActions.map((action, i) => (
+          {normalizedSecondary.map((action, i) => (
             <React.Fragment key={i}>
               {renderActionButton(action, false)}
             </React.Fragment>
           ))}
-          {primaryAction && renderActionButton(primaryAction, true)}
+          {normalizedPrimary && renderActionButton(normalizedPrimary, true)}
         </div>
       </div>
     </div>

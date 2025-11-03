@@ -41,9 +41,9 @@ function PinnedSettingsList() {
   if (loading) {
     return (
       <div className="mt-4 space-y-2" role="status" aria-live="polite">
-        <div className="h-4 bg-gray-100 rounded w-1/2 animate-pulse" />
-        <div className="h-4 bg-gray-100 rounded w-2/3 animate-pulse" />
-        <div className="h-4 bg-gray-100 rounded w-1/3 animate-pulse" />
+        <div className="h-4 bg-muted rounded w-1/2 animate-pulse" />
+        <div className="h-4 bg-muted rounded w-2/3 animate-pulse" />
+        <div className="h-4 bg-muted rounded w-1/3 animate-pulse" />
       </div>
     )
   }
@@ -60,7 +60,7 @@ function PinnedSettingsList() {
     <ul className="mt-4 space-y-2">
       {items.map((it) => (
         <li key={it.settingKey} className="flex items-center justify-between">
-          <Link href={it.route} className="text-sm text-gray-700 hover:underline">{it.label}</Link>
+          <Link href={it.route} className="text-sm text-muted-foreground hover:underline">{it.label}</Link>
           <Badge className="bg-blue-100 text-blue-800">Pinned</Badge>
         </li>
       ))}
@@ -154,15 +154,15 @@ function SettingsOverviewInner() {
 
             <div className="mt-4 space-y-2" role="status" aria-live="polite">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-700">Database</span>
+                <span className="text-sm text-muted-foreground">Database</span>
                 <Badge className="bg-green-100 text-green-800">Connected</Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-700">Authentication</span>
+                <span className="text-sm text-muted-foreground">Authentication</span>
                 <Badge className="bg-green-100 text-green-800">Configured</Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-700">Integrations</span>
+                <span className="text-sm text-muted-foreground">Integrations</span>
                 <Badge className="bg-amber-100 text-amber-800">Partial</Badge>
               </div>
             </div>
@@ -193,7 +193,7 @@ function SettingsOverviewInner() {
             <p className="text-sm text-muted-foreground mt-1">Latest configuration updates and audit events</p>
 
             <div className="mt-4 overflow-auto max-h-52">
-              <Suspense fallback={<div className="text-sm text-gray-500">Loading recent changes…</div>}>
+              <Suspense fallback={<div className="text-sm text-muted-foreground">Loading recent changes…</div>}>
                 <RecentChanges />
               </Suspense>
             </div>
@@ -256,7 +256,7 @@ function ManagePinnedSettings({ onClose }: { onClose?: () => void }) {
     }
   }
 
-  if (loading) return <div className="p-4 text-sm text-gray-600">Loading…</div>
+  if (loading) return <div className="p-4 text-sm text-muted-foreground">Loading…</div>
 
   if (!items.length) return <div className="p-4 text-sm text-muted-foreground">No pinned settings.</div>
 
@@ -265,7 +265,7 @@ function ManagePinnedSettings({ onClose }: { onClose?: () => void }) {
       <ul className="space-y-2">
         {items.map(it => (
           <li key={it.settingKey} className="flex items-center justify-between">
-            <Link href={it.route} onClick={onClose} className="text-sm text-gray-700 hover:underline">{it.label}</Link>
+            <Link href={it.route} onClick={onClose} className="text-sm text-muted-foreground hover:underline">{it.label}</Link>
             <div className="flex items-center gap-2">
               <Badge className="bg-blue-100 text-blue-800">Pinned</Badge>
               <Button variant="outline" size="sm" onClick={() => handleUnpin(it.settingKey)} aria-label={`Unpin ${it.label}`}>Unpin</Button>

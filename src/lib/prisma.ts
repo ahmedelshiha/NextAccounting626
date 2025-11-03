@@ -1,5 +1,6 @@
 import type { PrismaClient as PrismaClientType } from '@prisma/client'
 import { registerTenantGuard } from '@/lib/prisma-tenant-guard'
+import { setupPrismaQueryMonitor } from '@/lib/prisma-query-monitor'
 
 declare global {
   // Cache Prisma in global for hot-reload/dev to avoid multiple instances
@@ -70,6 +71,12 @@ async function createRealClient(url: string): Promise<PrismaClientType> {
       url ? { datasources: { db: { url } } } : undefined,
     )
     registerTenantGuard(client as any)
+
+    // Setup slow-query monitoring for observability
+    if (process.env.NODE_ENV === 'development' || process.env.LOG_SLOW_QUERIES === 'true') {
+      setupPrismaQueryMonitor(client as any)
+    }
+
     return client
   } catch (err) {
     if (process.env.NODE_ENV === 'test') {
