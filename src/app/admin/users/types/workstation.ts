@@ -41,7 +41,7 @@ export interface WorkstationInsightsPanelProps {
 
 // State & Context Types
 export interface UserFilters {
-  search?: string
+  search: string
   role?: string
   status?: string
   department?: string
