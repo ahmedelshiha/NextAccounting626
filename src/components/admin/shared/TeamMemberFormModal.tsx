@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React from 'react'
 import {
   Dialog,
   DialogContent,
@@ -19,8 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { toast } from 'sonner'
 import { AlertCircle, Loader2 } from 'lucide-react'
+import { useEntityForm, type EntityFormConfig, type FieldValidation } from '@/app/admin/users/hooks'
 
 interface TeamMemberFormData {
   name: string
@@ -40,7 +40,7 @@ interface TeamMemberFormModalProps {
   onClose: () => void
   onSuccess?: (memberId: string) => void
   mode?: 'create' | 'edit'
-  initialData?: Partial<TeamMemberFormData & { id: string }>
+  initialData?: Partial<Record<string, any>> & { id?: string }
   title?: string
   description?: string
 }
@@ -55,133 +55,100 @@ export const TeamMemberFormModal = React.forwardRef<HTMLDivElement, TeamMemberFo
     title,
     description,
   }, ref) {
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [error, setError] = useState<string | null>(null)
-    const [formData, setFormData] = useState<TeamMemberFormData>({
-      name: initialData?.name || '',
-      email: initialData?.email || '',
-      title: initialData?.title || '',
-      department: initialData?.department || '',
-      status: initialData?.status || 'ACTIVE',
-      phone: initialData?.phone || '',
-      specialties: initialData?.specialties || [],
-      certifications: initialData?.certifications || [],
-      availability: initialData?.availability || '9am-5pm',
-      notes: initialData?.notes || '',
-    })
-
     const defaultTitle = mode === 'create' ? 'Add Team Member' : 'Edit Team Member'
     const defaultDescription = mode === 'create'
       ? 'Add a new team member to your organization'
       : 'Update team member information'
 
-    const handleChange = useCallback((field: keyof TeamMemberFormData, value: any) => {
-      setFormData(prev => ({ ...prev, [field]: value }))
-      setError(null)
-    }, [])
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-    const validateForm = (): boolean => {
-      if (!formData.name.trim()) {
-        setError('Team member name is required')
-        return false
-      }
-      if (!formData.email.trim()) {
-        setError('Email is required')
-        return false
-      }
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(formData.email)) {
-        setError('Invalid email format')
-        return false
-      }
-      if (!formData.title.trim()) {
-        setError('Job title is required')
-        return false
-      }
-      if (!formData.department.trim()) {
-        setError('Department is required')
-        return false
-      }
-      return true
+    const validation: FieldValidation = {
+      name: { validate: (v) => !!v?.trim(), message: 'Team member name is required' },
+      email: [
+        { validate: (v) => !!v?.trim(), message: 'Email is required' },
+        { validate: (v) => emailRegex.test(v), message: 'Invalid email format' },
+      ],
+      title: { validate: (v) => !!v?.trim(), message: 'Job title is required' },
+      department: { validate: (v) => !!v?.trim(), message: 'Department is required' },
     }
 
-    const handleSubmit = useCallback(async (e: React.FormEvent) => {
-      e.preventDefault()
-      
-      if (!validateForm()) return
-
-      setIsSubmitting(true)
-      try {
-        const endpoint = mode === 'create'
-          ? '/api/admin/entities/team-members'
-          : `/api/admin/entities/team-members/${initialData?.id}`
-        const method = mode === 'create' ? 'POST' : 'PATCH'
-
-        const response = await fetch(endpoint, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.message || `Failed to ${mode === 'create' ? 'create' : 'update'} team member`)
-        }
-
-        const result = await response.json()
-        toast.success(
-          mode === 'create'
-            ? 'Team member added successfully'
-            : 'Team member updated successfully'
-        )
-        onSuccess?.(result.id)
+    const formConfig: EntityFormConfig = {
+      endpoint: (mode, id) =>
+        mode === 'create' ? '/api/admin/users' : `/api/admin/users/${id}`,
+      method: (mode) => (mode === 'create' ? 'POST' : 'PATCH'),
+      successMessage: (mode) =>
+        mode === 'create' ? 'Team member added successfully' : 'Team member updated successfully',
+      onSuccess: (id) => {
+        onSuccess?.(id)
         onClose()
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'An error occurred'
-        setError(errorMessage)
-        toast.error(errorMessage)
-      } finally {
-        setIsSubmitting(false)
-      }
-    }, [formData, mode, initialData?.id, onClose, onSuccess])
+      },
+    }
+
+    const form = useEntityForm<TeamMemberFormData>({
+      initialData: {
+        name: initialData?.name || '',
+        email: initialData?.email || '',
+        title: initialData?.title || '',
+        department: initialData?.department || '',
+        status: initialData?.status || 'ACTIVE',
+        phone: initialData?.phone || '',
+        specialties: initialData?.specialties || [],
+        certifications: initialData?.certifications || [],
+        availability: initialData?.availability || '9am-5pm',
+        notes: initialData?.notes || '',
+      },
+      validation,
+      config: formConfig,
+      entityId: initialData?.id,
+      mode: mode,
+    })
+
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      form.submit()
+    }
 
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent ref={ref} className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{title || defaultTitle}</DialogTitle>
-            <DialogDescription>{description || defaultDescription}</DialogDescription>
+        <DialogContent ref={ref} className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="text-lg sm:text-xl">{title || defaultTitle}</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">{description || defaultDescription}</DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
+            {form.error && (
               <div className="p-3 rounded-lg bg-red-50 border border-red-200 flex gap-2">
                 <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-700">{error}</p>
+                <p className="text-xs sm:text-sm text-red-700">{form.error}</p>
               </div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
+              <Label htmlFor="name" className="text-xs sm:text-sm">Name *</Label>
               <Input
                 id="name"
                 placeholder="Team member name"
-                value={formData.name}
-                onChange={(e) => handleChange('name', e.target.value)}
-                disabled={isSubmitting}
+                value={form.formData.name}
+                onChange={(e) => form.handleChange('name', e.target.value)}
+                disabled={form.isSubmitting}
+                className="text-sm"
               />
+              {form.fieldErrors.name && <p className="text-xs sm:text-sm text-red-600">{form.fieldErrors.name}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email" className="text-xs sm:text-sm">Email *</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="member@example.com"
-                value={formData.email}
-                onChange={(e) => handleChange('email', e.target.value)}
-                disabled={isSubmitting}
+                value={form.formData.email}
+                onChange={(e) => form.handleChange('email', e.target.value)}
+                disabled={form.isSubmitting}
+                className="text-sm"
               />
+              {form.fieldErrors.email && <p className="text-xs sm:text-sm text-red-600">{form.fieldErrors.email}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -190,15 +157,16 @@ export const TeamMemberFormModal = React.forwardRef<HTMLDivElement, TeamMemberFo
                 <Input
                   id="title"
                   placeholder="e.g., Senior Accountant"
-                  value={formData.title}
-                  onChange={(e) => handleChange('title', e.target.value)}
-                  disabled={isSubmitting}
+                  value={form.formData.title}
+                  onChange={(e) => form.handleChange('title', e.target.value)}
+                  disabled={form.isSubmitting}
                 />
+                {form.fieldErrors.title && <p className="text-sm text-red-600">{form.fieldErrors.title}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="department">Department *</Label>
-                <Select value={formData.department} onValueChange={(value) => handleChange('department', value)}>
+                <Select value={form.formData.department} onValueChange={(value) => form.handleChange('department', value)}>
                   <SelectTrigger id="department">
                     <SelectValue />
                   </SelectTrigger>
@@ -210,6 +178,7 @@ export const TeamMemberFormModal = React.forwardRef<HTMLDivElement, TeamMemberFo
                     <SelectItem value="Administration">Administration</SelectItem>
                   </SelectContent>
                 </Select>
+                {form.fieldErrors.department && <p className="text-sm text-red-600">{form.fieldErrors.department}</p>}
               </div>
             </div>
 
@@ -219,15 +188,15 @@ export const TeamMemberFormModal = React.forwardRef<HTMLDivElement, TeamMemberFo
                 <Input
                   id="phone"
                   placeholder="Phone number"
-                  value={formData.phone}
-                  onChange={(e) => handleChange('phone', e.target.value)}
-                  disabled={isSubmitting}
+                  value={form.formData.phone || ''}
+                  onChange={(e) => form.handleChange('phone', e.target.value)}
+                  disabled={form.isSubmitting}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => handleChange('status', value as any)}>
+                <Select value={form.formData.status} onValueChange={(value) => form.handleChange('status', value)}>
                   <SelectTrigger id="status">
                     <SelectValue />
                   </SelectTrigger>
@@ -245,9 +214,9 @@ export const TeamMemberFormModal = React.forwardRef<HTMLDivElement, TeamMemberFo
               <Input
                 id="availability"
                 placeholder="e.g., 9am-5pm, Mon-Fri"
-                value={formData.availability}
-                onChange={(e) => handleChange('availability', e.target.value)}
-                disabled={isSubmitting}
+                value={form.formData.availability || ''}
+                onChange={(e) => form.handleChange('availability', e.target.value)}
+                disabled={form.isSubmitting}
               />
             </div>
 
@@ -256,9 +225,9 @@ export const TeamMemberFormModal = React.forwardRef<HTMLDivElement, TeamMemberFo
               <Input
                 id="specialties"
                 placeholder="e.g., Tax Planning, Compliance, Audit"
-                value={Array.isArray(formData.specialties) ? formData.specialties.join(', ') : ''}
-                onChange={(e) => handleChange('specialties', e.target.value.split(',').map(s => s.trim()))}
-                disabled={isSubmitting}
+                value={Array.isArray(form.formData.specialties) ? form.formData.specialties.join(', ') : ''}
+                onChange={(e) => form.handleChange('specialties', e.target.value.split(',').map(s => s.trim()))}
+                disabled={form.isSubmitting}
               />
             </div>
 
@@ -267,9 +236,9 @@ export const TeamMemberFormModal = React.forwardRef<HTMLDivElement, TeamMemberFo
               <Input
                 id="certifications"
                 placeholder="e.g., CPA, CIA, CFE"
-                value={Array.isArray(formData.certifications) ? formData.certifications.join(', ') : ''}
-                onChange={(e) => handleChange('certifications', e.target.value.split(',').map(s => s.trim()))}
-                disabled={isSubmitting}
+                value={Array.isArray(form.formData.certifications) ? form.formData.certifications.join(', ') : ''}
+                onChange={(e) => form.handleChange('certifications', e.target.value.split(',').map(s => s.trim()))}
+                disabled={form.isSubmitting}
               />
             </div>
 
@@ -278,9 +247,9 @@ export const TeamMemberFormModal = React.forwardRef<HTMLDivElement, TeamMemberFo
               <Textarea
                 id="notes"
                 placeholder="Additional notes"
-                value={formData.notes}
-                onChange={(e) => handleChange('notes', e.target.value)}
-                disabled={isSubmitting}
+                value={form.formData.notes || ''}
+                onChange={(e) => form.handleChange('notes', e.target.value)}
+                disabled={form.isSubmitting}
                 rows={3}
               />
             </div>
@@ -290,15 +259,15 @@ export const TeamMemberFormModal = React.forwardRef<HTMLDivElement, TeamMemberFo
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                disabled={isSubmitting}
+                disabled={form.isSubmitting}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={form.isSubmitting}
               >
-                {isSubmitting ? (
+                {form.isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     {mode === 'create' ? 'Adding...' : 'Updating...'}

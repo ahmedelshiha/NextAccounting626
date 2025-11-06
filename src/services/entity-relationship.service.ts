@@ -117,11 +117,15 @@ export class EntityRelationshipService {
   }
 
   /**
-   * Find orphaned users (without roles or teams)
+   * Find orphaned users (without team assignments)
    */
   async findOrphanedUsers(): Promise<string[]> {
     const users = await prisma.user.findMany({
-      where: { role: null },
+      where: {
+        teamMembers: {
+          none: {}
+        }
+      },
       select: { id: true }
     })
 
@@ -177,7 +181,7 @@ export class EntityRelationshipService {
     }
 
     // Simplified - assume user has permissions based on role
-    const hasPermissions = user.role ? [user.role] : []
+    const hasPermissions = user.role ? [String(user.role)] : []
     const missingPermissions = requiredPermissions.filter((p) => !hasPermissions.includes(p))
 
     return {

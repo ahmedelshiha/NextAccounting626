@@ -2,13 +2,16 @@ import { test, expect, Page } from '@playwright/test'
 
 /**
  * E2E Tests for Admin Add User Flows
- * 
+ *
  * Tests the following scenarios:
  * 1. Add user from Dashboard quick action
- * 2. Add user from Entities tab
- * 3. Legacy /admin/clients/new route redirect
+ * 2. Role-specific user creation from Dashboard
+ * 3. Legacy route redirects to unified Dashboard
  * 4. Form validation
  * 5. Error handling
+ * 6. User role selection
+ * 7. Onboarding flag
+ * 8. Accessibility
  */
 
 test.describe('Admin Add User Flows', () => {
@@ -176,31 +179,64 @@ test.describe('Admin Add User Flows', () => {
     })
   })
 
-  test.describe('Entities Tab Add User', () => {
-    test('should access entities tab', async () => {
-      // Click entities tab
-      await page.click('[role="tab"]:has-text("Entities")')
-
-      // Verify tab is active
-      const entitiesTab = page.locator('[role="tab"]:has-text("Entities")')
-      await expect(entitiesTab).toHaveAttribute('aria-selected', 'true')
-    })
-
-    test('should have add user action in entities tab', async () => {
-      // Navigate to entities tab
-      await page.goto('/admin/users?tab=entities')
-
-      // Verify page loaded
+  test.describe('Role-Specific User Creation (Unified Dashboard)', () => {
+    test('should create client from role preset', async () => {
+      // Navigate to dashboard
+      await page.goto('/admin/users?tab=dashboard')
       await page.waitForLoadState('networkidle')
 
-      // Look for add user button or option
-      // The specific implementation depends on EntitiesTab design
-      const addButton = page.locator('button:has-text("Add User"), button:has-text("Create"), button:has-text("New")')
-      if (await addButton.isVisible()) {
-        await addButton.click()
-        await expect(page.locator('[role="dialog"]')).toBeVisible()
+      // Click on Clients role preset chip
+      const clientsChip = page.locator('button:has-text("Clients")')
+      if (await clientsChip.isVisible()) {
+        await clientsChip.click()
+        // Verify filter is applied
+        await expect(page.locator('text=showing.*users')).toBeVisible()
       }
+
+      // Click Add User button
+      await page.click('button:has-text("Add User")')
+
+      // Fill form for client
+      await page.fill('input#name', 'Client User')
+      await page.fill('input#email', `client-${Date.now()}@example.com`)
+      await page.fill('input#company', 'Client Company')
+
+      // Submit form
+      await page.click('button:has-text("Create User")')
+
+      // Verify success
+      await expect(page.locator('text=User created successfully')).toBeVisible()
     })
+
+    test('should create team member from role preset', async () => {
+      // Navigate to dashboard
+      await page.goto('/admin/users?tab=dashboard')
+      await page.waitForLoadState('networkidle')
+
+      // Click on Team role preset chip
+      const teamChip = page.locator('button:has-text("Team")')
+      if (await teamChip.isVisible()) {
+        await teamChip.click()
+        // Verify filter is applied
+        await expect(page.locator('text=showing.*users')).toBeVisible()
+      }
+
+      // Click Add User button
+      await page.click('button:has-text("Add User")')
+
+      // Fill form for team member
+      await page.fill('input#name', 'Team Member')
+      await page.fill('input#email', `team-${Date.now()}@example.com`)
+      await page.fill('input#department', 'Engineering')
+      await page.fill('input#title', 'Developer')
+
+      // Submit form
+      await page.click('button:has-text("Create User")')
+
+      // Verify success
+      await expect(page.locator('text=User created successfully')).toBeVisible()
+    })
+
   })
 
   test.describe('Legacy Route Redirects', () => {

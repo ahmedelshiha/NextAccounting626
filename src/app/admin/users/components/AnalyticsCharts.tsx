@@ -78,8 +78,8 @@ function SimpleLineChart({ data }: { data: TimeSeriesData[] }) {
     return <div className="text-center text-muted-foreground py-8">No data available</div>
   }
 
-  const maxValue = Math.max(...data.map(d => d.value))
-  const minValue = Math.min(...data.map(d => d.value))
+  const maxValue = Math.max(...data.map(d => d.users))
+  const minValue = Math.min(...data.map(d => d.users))
   const range = maxValue - minValue || 1
   const height = 200
 
@@ -112,7 +112,7 @@ function SimpleLineChart({ data }: { data: TimeSeriesData[] }) {
           points={sampledData
             .map((d, i) => {
               const x = 50 + (i / (sampledData.length - 1 || 1)) * 730
-              const y = 180 - ((d.value - minValue) / range) * 130
+              const y = 180 - ((d.users - minValue) / range) * 130
               return `${x},${y}`
             })
             .join(' ')}
@@ -124,7 +124,7 @@ function SimpleLineChart({ data }: { data: TimeSeriesData[] }) {
         {/* Data points */}
         {sampledData.map((d, i) => {
           const x = 50 + (i / (sampledData.length - 1 || 1)) * 730
-          const y = 180 - ((d.value - minValue) / range) * 130
+          const y = 180 - ((d.users - minValue) / range) * 130
           return (
             <circle
               key={`point-${i}`}
@@ -144,7 +144,7 @@ function SimpleLineChart({ data }: { data: TimeSeriesData[] }) {
           <span>Current Trend</span>
         </div>
         <div className="text-muted-foreground">
-          Latest: {data[data.length - 1]?.value.toLocaleString()}
+          Latest: {data[data.length - 1]?.users.toLocaleString()}
         </div>
       </div>
     </div>

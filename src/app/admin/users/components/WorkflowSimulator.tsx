@@ -9,6 +9,14 @@ import { Progress } from '@/components/ui/progress'
 import { Workflow, WorkflowSimulation } from '@/services/workflow-designer.service'
 import { Play, RotateCw, CheckCircle, AlertTriangle, Clock } from 'lucide-react'
 
+interface ExecutionStep {
+  nodeId: string
+  status: 'SUCCESS' | 'FAILED' | 'SKIPPED'
+  timestamp: Date | string
+  output?: any
+  error?: string
+}
+
 interface WorkflowSimulatorProps {
   workflow: Workflow
   onSimulate: (workflow: Workflow, testData?: Record<string, any>) => Promise<WorkflowSimulation>
@@ -216,7 +224,7 @@ function ExecutionStepItem({
   isExpanded,
   onToggle
 }: {
-  step: any
+  step: ExecutionStep
   index: number
   isExpanded: boolean
   onToggle: () => void

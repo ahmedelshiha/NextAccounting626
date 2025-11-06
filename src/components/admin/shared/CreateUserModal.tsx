@@ -81,9 +81,7 @@ export const CreateUserModal = React.forwardRef<HTMLDivElement, CreateUserModalP
 
           const response = await fetch(endpoint, {
             method,
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
           })
 

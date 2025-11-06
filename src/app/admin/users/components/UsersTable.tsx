@@ -115,19 +115,20 @@ export const UsersTable = memo(function UsersTable({
     (user: UserItem) => (
       <div
         key={user.id}
-        className="flex items-center justify-between p-4 bg-white border rounded-lg hover:shadow-sm w-full"
+        className="flex flex-col gap-3 p-4 bg-white border rounded-lg hover:shadow-sm w-full"
         role="row"
         aria-label={`User row for ${user.name || user.email}`}
       >
-        <div className="flex items-center gap-4 min-w-0">
+        {/* Top row: Checkbox and user info */}
+        <div className="flex items-start gap-3 min-w-0">
           <Checkbox
             checked={selectedUserIds.has(user.id)}
             onCheckedChange={(checked) => handleSelectUser(user.id, checked === true)}
             aria-label={`Select ${user.name || user.email}`}
-            className="shrink-0"
+            className="mt-0.5 flex-shrink-0"
           />
           <div
-            className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold shrink-0"
+            className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 text-sm"
             aria-hidden="true"
           >
             {(user.name || user.email).charAt(0).toUpperCase()}
@@ -135,21 +136,24 @@ export const UsersTable = memo(function UsersTable({
           <div className="min-w-0 flex-1">
             <button
               onClick={() => onViewProfile(user)}
-              className="font-medium text-gray-900 hover:text-blue-600 truncate max-w-[220px] sm:max-w-[260px] md:max-w-[320px] text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+              className="font-medium text-sm sm:text-base text-gray-900 hover:text-blue-600 truncate w-full text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
               aria-label={`View profile for ${user.name || user.email}`}
             >
               {user.name || 'Unnamed User'}
             </button>
-            <div className="text-sm text-gray-600 truncate max-w-[220px] sm:max-w-[260px] md:max-w-[320px]">
+            <div className="text-xs sm:text-sm text-gray-600 truncate">
               {user.email}
             </div>
-            <div className="flex items-center gap-2 mt-1">
-              <div className="text-xs text-gray-400">Joined {formatDate(user.createdAt)}</div>
-              {user.company && <div className="text-xs text-gray-400">• {user.company}</div>}
+            <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1 text-xs text-gray-400">
+              <span>Joined {formatDate(user.createdAt)}</span>
+              {user.company && <span className="hidden sm:inline">•</span>}
+              {user.company && <span className="hidden sm:inline">{user.company}</span>}
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3 shrink-0">
+
+        {/* Bottom row: Status, Role badge, and actions */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 pl-11">
           <div
             className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(user.status)}`}
             role="status"
@@ -158,7 +162,7 @@ export const UsersTable = memo(function UsersTable({
             {user.status || 'ACTIVE'}
           </div>
           <div
-            className={`px-2 py-1 rounded text-xs font-medium ${getRoleColor(user.role)}`}
+            className={`px-2 py-1 rounded text-xs font-medium hidden sm:inline-block ${getRoleColor(user.role)}`}
             role="status"
             aria-label={`Role: ${user.role}`}
           >
@@ -167,7 +171,7 @@ export const UsersTable = memo(function UsersTable({
           {perms.canManageUsers && (
             <Select value={user.role} onValueChange={(val) => handleRoleChange(user.id, val as UserItem['role'])}>
               <SelectTrigger
-                className="w-28 h-8 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="h-8 text-xs w-24 sm:w-28 flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 aria-label={`Change role for ${user.name || user.email}`}
               >
                 <SelectValue />
@@ -181,6 +185,7 @@ export const UsersTable = memo(function UsersTable({
               </SelectContent>
             </Select>
           )}
+          <div className="flex-1" />
           <UserActions
             user={user}
             onViewProfile={onViewProfile}
@@ -194,13 +199,13 @@ export const UsersTable = memo(function UsersTable({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <div className="space-y-1">
-          <CardTitle>User Directory</CardTitle>
-          <CardDescription>Search, filter and manage users</CardDescription>
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 space-y-0">
+        <div className="space-y-1 min-w-0">
+          <CardTitle className="text-xl sm:text-2xl">User Directory</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">Search, filter and manage users</CardDescription>
         </div>
         {users.length > 0 && (
-          <div className="flex items-center gap-2 text-sm" role="toolbar" aria-label="Table selection actions">
+          <div className="flex items-center gap-2 text-sm flex-shrink-0" role="toolbar" aria-label="Table selection actions">
             <Checkbox
               checked={allSelected || someSelected}
               onCheckedChange={handleSelectAllChange}
@@ -208,7 +213,7 @@ export const UsersTable = memo(function UsersTable({
               title={allSelected ? 'Deselect all users' : 'Select all users'}
               className={someSelected ? 'opacity-50' : ''}
             />
-            <span className="text-gray-500" aria-live="polite">
+            <span className="text-gray-500 text-xs sm:text-sm" aria-live="polite">
               {selectedUserIds.size > 0 ? `${selectedUserIds.size} selected` : 'Select all'}
             </span>
           </div>

@@ -29,23 +29,41 @@ test.describe('Unified Admin redirects and tabs', () => {
     expect(page.url()).toMatch(/tab=rbac/) // RBAC tab
   })
 
-  test('clients redirects to Entities tab (clients sub-tab)', async ({ page }) => {
+  test('clients redirects to Dashboard tab with CLIENT role filter', async ({ page }) => {
     await page.goto('/admin/clients')
-    await expect(page).toHaveURL(/tab=entities/) // unified entities tab
-    // Clients embedded list title
-    await expect(page.getByRole('heading', { name: /client management/i })).toBeVisible({ timeout: 5000 })
+    await expect(page).toHaveURL(/\/admin\/users\?/) // unified users page
+    expect(page.url()).toMatch(/tab=dashboard/) // Dashboard tab
+    expect(page.url()).toMatch(/role=CLIENT/) // CLIENT role filter
+    // Verify Dashboard tab is active
+    await expect(page.getByRole('tab', { name: /dashboard/i, selected: true })).toBeVisible({ timeout: 5000 })
+    // Verify role filter chips are visible and Clients chip is active
+    await expect(page.getByRole('button', { name: /clients/i })).toBeVisible({ timeout: 5000 })
   })
 
-  test('team redirects to Entities tab (team sub-tab)', async ({ page }) => {
+  test('team redirects to Dashboard tab with TEAM_MEMBER role filter', async ({ page }) => {
     await page.goto('/admin/team')
-    await expect(page).toHaveURL(/tab=entities/) // unified entities tab
-    // TeamManagement without header shows stats cards; assert a stable label
-    await expect(page.getByText(/total members/i)).toBeVisible({ timeout: 5000 })
+    await expect(page).toHaveURL(/\/admin\/users\?/) // unified users page
+    expect(page.url()).toMatch(/tab=dashboard/) // Dashboard tab
+    expect(page.url()).toMatch(/role=TEAM_MEMBER/) // TEAM_MEMBER role filter
+    // Verify Dashboard tab is active
+    await expect(page.getByRole('tab', { name: /dashboard/i, selected: true })).toBeVisible({ timeout: 5000 })
+    // Verify role filter chips are visible and Team chip is active
+    await expect(page.getByRole('button', { name: /team/i })).toBeVisible({ timeout: 5000 })
   })
 
-  test('unified Users page shows Entities and RBAC tabs', async ({ page }) => {
+  test('role filter chips work when navigating dashboard directly', async ({ page }) => {
+    await page.goto('/admin/users?tab=dashboard&role=CLIENT')
+    await expect(page.getByRole('tab', { name: /dashboard/i, selected: true })).toBeVisible({ timeout: 5000 })
+    // Verify that users table is filtered to clients
+    await expect(page.getByText(/showing.*users/i)).toBeVisible({ timeout: 5000 })
+  })
+
+  test('unified Users page shows Dashboard and RBAC tabs (Entities retired)', async ({ page }) => {
     await page.goto('/admin/users')
-    await expect(page.getByRole('tab', { name: /entities/i })).toBeVisible()
+    // Entities tab should be hidden after retirement
+    await expect(page.getByRole('tab', { name: /entities/i })).not.toBeVisible()
+    // Dashboard and RBAC tabs should be visible
+    await expect(page.getByRole('tab', { name: /dashboard/i })).toBeVisible()
     await expect(page.getByRole('tab', { name: /roles & permissions/i })).toBeVisible()
   })
 })

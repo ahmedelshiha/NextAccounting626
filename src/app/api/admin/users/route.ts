@@ -9,6 +9,7 @@ import { applyRateLimit, getClientIp } from '@/lib/rate-limit'
 import { tenantFilter } from '@/lib/tenant'
 
 export const runtime = 'nodejs'
+export const revalidate = 30 // ISR: Revalidate every 30 seconds
 
 export const GET = withTenantContext(async (request: Request) => {
   const ctx = requireTenantContext()
@@ -26,11 +27,59 @@ export const GET = withTenantContext(async (request: Request) => {
     if (!hasPermission(role, PERMISSIONS.USERS_MANAGE)) return respond.forbidden('Forbidden')
 
     try {
-      // Parse pagination parameters
+      // Parse pagination and filter parameters
       const { searchParams } = new URL(request.url)
       const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
       const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)))
       const skip = (page - 1) * limit
+
+      // Parse filter parameters
+      const search = searchParams.get('search')?.trim() || undefined
+      const role = searchParams.get('role')?.trim() || undefined
+      const status = searchParams.get('status')?.trim() || undefined
+      const tier = searchParams.get('tier')?.trim() || undefined
+      const department = searchParams.get('department')?.trim() || undefined
+      const sortBy = searchParams.get('sortBy') || 'createdAt'
+      const sortOrder = searchParams.get('sortOrder') || 'desc'
+
+      // Build Prisma WHERE clause with filters
+      const whereClause: any = tenantFilter(tenantId)
+
+      // Add search filter (searches email and name)
+      if (search) {
+        whereClause.OR = [
+          { email: { contains: search, mode: 'insensitive' } },
+          { name: { contains: search, mode: 'insensitive' } }
+        ]
+      }
+
+      // Add role filter
+      if (role && role !== 'ALL') {
+        whereClause.role = role
+      }
+
+      // Add availability status filter
+      if (status && status !== 'ALL') {
+        whereClause.availabilityStatus = status
+      }
+
+      // Add tier filter (for clients)
+      if (tier && tier !== 'ALL' && tier !== 'all') {
+        whereClause.tier = tier
+      }
+
+      // Add department filter
+      if (department && department !== 'ALL') {
+        whereClause.department = department
+      }
+
+      // Build sort order
+      const orderByClause: any = {}
+      if (sortBy === 'name' || sortBy === 'email' || sortBy === 'role' || sortBy === 'tier' || sortBy === 'department') {
+        orderByClause[sortBy] = sortOrder.toLowerCase() === 'asc' ? 'asc' : 'desc'
+      } else {
+        orderByClause.createdAt = sortOrder.toLowerCase() === 'asc' ? 'asc' : 'desc'
+      }
 
       // Implement timeout resilience for slow queries
       let timeoutId: NodeJS.Timeout | null = null
@@ -41,20 +90,26 @@ export const GET = withTenantContext(async (request: Request) => {
       let queryData: any = null
 
       const queryPromise = Promise.all([
-        prisma.user.count({ where: tenantFilter(tenantId) }),
+        prisma.user.count({ where: whereClause }),
         prisma.user.findMany({
-          where: tenantFilter(tenantId),
+          where: whereClause,
           select: {
             id: true,
             name: true,
             email: true,
             role: true,
+            availabilityStatus: true,
+            department: true,
+            position: true,
+            tier: true,
+            experienceYears: true,
+            image: true,
             createdAt: true,
             updatedAt: true
           },
           skip,
           take: limit,
-          orderBy: { createdAt: 'desc' }
+          orderBy: orderByClause
         })
       ]).then(([total, users]) => {
         queryCompleted = true
@@ -115,6 +170,7 @@ export const GET = withTenantContext(async (request: Request) => {
         return new NextResponse(null, { status: 304, headers: { ETag: etag } })
       }
 
+      const totalPages = Math.ceil(total / limit)
       return NextResponse.json(
         {
           users: mapped,
@@ -122,13 +178,29 @@ export const GET = withTenantContext(async (request: Request) => {
             page,
             limit,
             total,
-            pages: Math.ceil(total / limit)
+            pages: totalPages
+          },
+          filters: {
+            search: search || undefined,
+            role: role || undefined,
+            status: status || undefined,
+            tier: tier || undefined,
+            department: department || undefined,
+            sortBy,
+            sortOrder
           }
         },
         {
           headers: {
             ETag: etag,
-            'Cache-Control': 'private, max-age=30, stale-while-revalidate=60'
+            'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+            'X-Total-Count': total.toString(),
+            'X-Total-Pages': totalPages.toString(),
+            'X-Current-Page': page.toString(),
+            'X-Page-Size': limit.toString(),
+            'X-Filter-Search': search || 'none',
+            'X-Filter-Role': role || 'none',
+            'X-Filter-Tier': tier || 'none'
           }
         }
       )

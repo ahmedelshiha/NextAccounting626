@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React from 'react'
 import {
   Dialog,
   DialogContent,
@@ -19,8 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { toast } from 'sonner'
 import { AlertCircle, Loader2 } from 'lucide-react'
+import { useEntityForm, type EntityFormConfig, type FieldValidation } from '@/app/admin/users/hooks'
 
 interface ClientFormData {
   name: string
@@ -40,7 +40,7 @@ interface ClientFormModalProps {
   onClose: () => void
   onSuccess?: (clientId: string) => void
   mode?: 'create' | 'edit'
-  initialData?: Partial<ClientFormData & { id: string }>
+  initialData?: Partial<Record<string, any>> & { id?: string }
   title?: string
   description?: string
 }
@@ -55,156 +55,131 @@ export const ClientFormModal = React.forwardRef<HTMLDivElement, ClientFormModalP
     title,
     description,
   }, ref) {
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [error, setError] = useState<string | null>(null)
-    const [formData, setFormData] = useState<ClientFormData>({
-      name: initialData?.name || '',
-      email: initialData?.email || '',
-      phone: initialData?.phone || '',
-      company: initialData?.company || '',
-      tier: initialData?.tier || 'INDIVIDUAL',
-      status: initialData?.status || 'ACTIVE',
-      address: initialData?.address || '',
-      city: initialData?.city || '',
-      country: initialData?.country || '',
-      notes: initialData?.notes || '',
-    })
-
     const defaultTitle = mode === 'create' ? 'Create New Client' : 'Edit Client'
     const defaultDescription = mode === 'create'
       ? 'Add a new client to your system'
       : 'Update client information'
 
-    const handleChange = useCallback((field: keyof ClientFormData, value: string) => {
-      setFormData(prev => ({ ...prev, [field]: value }))
-      setError(null)
-    }, [])
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-    const validateForm = (): boolean => {
-      if (!formData.name.trim()) {
-        setError('Client name is required')
-        return false
-      }
-      if (!formData.email.trim()) {
-        setError('Email is required')
-        return false
-      }
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(formData.email)) {
-        setError('Invalid email format')
-        return false
-      }
-      return true
+    const validation: FieldValidation = {
+      name: { validate: (v) => !!v?.trim(), message: 'Client name is required' },
+      email: [
+        { validate: (v) => !!v?.trim(), message: 'Email is required' },
+        { validate: (v) => emailRegex.test(v), message: 'Invalid email format' },
+      ],
     }
 
-    const handleSubmit = useCallback(async (e: React.FormEvent) => {
-      e.preventDefault()
-      
-      if (!validateForm()) return
-
-      setIsSubmitting(true)
-      try {
-        const endpoint = mode === 'create'
-          ? '/api/admin/entities/clients'
-          : `/api/admin/entities/clients/${initialData?.id}`
-        const method = mode === 'create' ? 'POST' : 'PATCH'
-
-        const response = await fetch(endpoint, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.message || `Failed to ${mode === 'create' ? 'create' : 'update'} client`)
-        }
-
-        const result = await response.json()
-        toast.success(
-          mode === 'create'
-            ? 'Client created successfully'
-            : 'Client updated successfully'
-        )
-        onSuccess?.(result.id)
+    const formConfig: EntityFormConfig = {
+      endpoint: (mode, id) =>
+        mode === 'create' ? '/api/admin/users' : `/api/admin/users/${id}`,
+      method: (mode) => (mode === 'create' ? 'POST' : 'PATCH'),
+      successMessage: (mode) =>
+        mode === 'create' ? 'Client created successfully' : 'Client updated successfully',
+      onSuccess: (id) => {
+        onSuccess?.(id)
         onClose()
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'An error occurred'
-        setError(errorMessage)
-        toast.error(errorMessage)
-      } finally {
-        setIsSubmitting(false)
-      }
-    }, [formData, mode, initialData?.id, onClose, onSuccess])
+      },
+    }
+
+    const form = useEntityForm<ClientFormData>({
+      initialData: {
+        name: initialData?.name || '',
+        email: initialData?.email || '',
+        phone: initialData?.phone || '',
+        company: initialData?.company || '',
+        tier: initialData?.tier || 'INDIVIDUAL',
+        status: initialData?.status || 'ACTIVE',
+        address: initialData?.address || '',
+        city: initialData?.city || '',
+        country: initialData?.country || '',
+        notes: initialData?.notes || '',
+      },
+      validation,
+      config: formConfig,
+      entityId: initialData?.id,
+      mode: mode,
+    })
+
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      form.submit()
+    }
 
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent ref={ref} className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{title || defaultTitle}</DialogTitle>
-            <DialogDescription>{description || defaultDescription}</DialogDescription>
+        <DialogContent ref={ref} className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="text-lg sm:text-xl">{title || defaultTitle}</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">{description || defaultDescription}</DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
+            {form.error && (
               <div className="p-3 rounded-lg bg-red-50 border border-red-200 flex gap-2">
                 <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-700">{error}</p>
+                <p className="text-sm text-red-700">{form.error}</p>
               </div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
+              <Label htmlFor="name" className="text-xs sm:text-sm">Name *</Label>
               <Input
                 id="name"
                 placeholder="Client name"
-                value={formData.name}
-                onChange={(e) => handleChange('name', e.target.value)}
-                disabled={isSubmitting}
+                value={form.formData.name}
+                onChange={(e) => form.handleChange('name', e.target.value)}
+                disabled={form.isSubmitting}
+                className="text-sm"
               />
+              {form.fieldErrors.name && <p className="text-xs sm:text-sm text-red-600">{form.fieldErrors.name}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email" className="text-xs sm:text-sm">Email *</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="client@example.com"
-                value={formData.email}
-                onChange={(e) => handleChange('email', e.target.value)}
-                disabled={isSubmitting}
+                value={form.formData.email}
+                onChange={(e) => form.handleChange('email', e.target.value)}
+                disabled={form.isSubmitting}
+                className="text-sm"
               />
+              {form.fieldErrors.email && <p className="text-xs sm:text-sm text-red-600">{form.fieldErrors.email}</p>}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="phone" className="text-xs sm:text-sm">Phone</Label>
                 <Input
                   id="phone"
                   placeholder="Phone number"
-                  value={formData.phone}
-                  onChange={(e) => handleChange('phone', e.target.value)}
-                  disabled={isSubmitting}
+                  value={form.formData.phone || ''}
+                  onChange={(e) => form.handleChange('phone', e.target.value)}
+                  disabled={form.isSubmitting}
+                  className="text-sm"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="company">Company</Label>
+                <Label htmlFor="company" className="text-xs sm:text-sm">Company</Label>
                 <Input
                   id="company"
                   placeholder="Company name"
-                  value={formData.company}
-                  onChange={(e) => handleChange('company', e.target.value)}
-                  disabled={isSubmitting}
+                  value={form.formData.company || ''}
+                  onChange={(e) => form.handleChange('company', e.target.value)}
+                  disabled={form.isSubmitting}
+                  className="text-sm"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="tier">Tier</Label>
-                <Select value={formData.tier} onValueChange={(value) => handleChange('tier', value as any)}>
-                  <SelectTrigger id="tier">
+                <Label htmlFor="tier" className="text-xs sm:text-sm">Tier</Label>
+                <Select value={form.formData.tier} onValueChange={(value) => form.handleChange('tier', value)}>
+                  <SelectTrigger id="tier" className="text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -216,9 +191,9 @@ export const ClientFormModal = React.forwardRef<HTMLDivElement, ClientFormModalP
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => handleChange('status', value as any)}>
-                  <SelectTrigger id="status">
+                <Label htmlFor="status" className="text-xs sm:text-sm">Status</Label>
+                <Select value={form.formData.status} onValueChange={(value) => form.handleChange('status', value)}>
+                  <SelectTrigger id="status" className="text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -231,49 +206,53 @@ export const ClientFormModal = React.forwardRef<HTMLDivElement, ClientFormModalP
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
+              <Label htmlFor="address" className="text-xs sm:text-sm">Address</Label>
               <Input
                 id="address"
                 placeholder="Street address"
-                value={formData.address}
-                onChange={(e) => handleChange('address', e.target.value)}
-                disabled={isSubmitting}
+                value={form.formData.address || ''}
+                onChange={(e) => form.handleChange('address', e.target.value)}
+                disabled={form.isSubmitting}
+                className="text-sm"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
+                <Label htmlFor="city" className="text-xs sm:text-sm">City</Label>
                 <Input
                   id="city"
                   placeholder="City"
-                  value={formData.city}
-                  onChange={(e) => handleChange('city', e.target.value)}
-                  disabled={isSubmitting}
+                  value={form.formData.city || ''}
+                  onChange={(e) => form.handleChange('city', e.target.value)}
+                  disabled={form.isSubmitting}
+                  className="text-sm"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
+                <Label htmlFor="country" className="text-xs sm:text-sm">Country</Label>
                 <Input
                   id="country"
                   placeholder="Country"
-                  value={formData.country}
-                  onChange={(e) => handleChange('country', e.target.value)}
-                  disabled={isSubmitting}
+                  value={form.formData.country || ''}
+                  onChange={(e) => form.handleChange('country', e.target.value)}
+                  disabled={form.isSubmitting}
+                  className="text-sm"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes" className="text-xs sm:text-sm">Notes</Label>
               <Textarea
                 id="notes"
                 placeholder="Additional notes"
-                value={formData.notes}
-                onChange={(e) => handleChange('notes', e.target.value)}
-                disabled={isSubmitting}
+                value={form.formData.notes || ''}
+                onChange={(e) => form.handleChange('notes', e.target.value)}
+                disabled={form.isSubmitting}
                 rows={3}
+                className="text-sm"
               />
             </div>
 
@@ -282,15 +261,15 @@ export const ClientFormModal = React.forwardRef<HTMLDivElement, ClientFormModalP
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                disabled={isSubmitting}
+                disabled={form.isSubmitting}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={form.isSubmitting}
               >
-                {isSubmitting ? (
+                {form.isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     {mode === 'create' ? 'Creating...' : 'Updating...'}

@@ -44,6 +44,12 @@ model User {
   maxConcurrentProjects     Int?                    @default(3)
   hireDate                  DateTime?
   managerId                 String?
+  tier                      String?                 // Client tier: INDIVIDUAL, SMB, ENTERPRISE
+  workingHours              Json?                   // Team working hours schedule
+  bookingBuffer             Int?                    // Minutes buffer between bookings
+  autoAssign                Boolean?                // Auto-assign tasks
+  certifications            String[]                // Team certifications
+  experienceYears           Int?                    // Years of experience
   attachments               Attachment[]
   bookingPreferences        BookingPreferences?
   assignedByServiceRequests ServiceRequest[]        @relation("ServiceRequestAssignedBy")
@@ -91,6 +97,18 @@ model User {
   @@unique([tenantId, email])
   @@index([tenantId, role])
   @@index([tenantId, createdAt])
+  @@index([tenantId, availabilityStatus])
+  @@index([tenantId, department])
+  @@index([tenantId, tier])
+  @@index([tenantId, experienceYears])
+  @@index([tenantId, availabilityStatus, createdAt])
+  @@index([tenantId, role, createdAt])
+  // Phase 4.3: Server-side filtering optimization indexes
+  @@index([tenantId, email], name: "idx_users_tenantid_email")
+  @@index([tenantId, name], name: "idx_users_tenantid_name")
+  @@index([tenantId, role, availabilityStatus], name: "idx_users_tenantid_role_status")
+  @@index([tenantId, tier, createdAt(sort: Desc)], name: "idx_users_tenantid_tier_created")
+  @@index([tenantId, department, createdAt(sort: Desc)], name: "idx_users_tenantid_department_created")
   @@map("users")
 }
 
@@ -227,6 +245,7 @@ model Tenant {
   userWorkflows         UserWorkflow[]
   workflowTemplates     WorkflowTemplate[]
   bulkOperations        BulkOperation[]
+  userManagementSettings UserManagementSettings?
 
   @@index([status])
 }
@@ -1157,6 +1176,28 @@ model OrganizationSettings {
 
   @@index([tenantId])
   @@map("organization_settings")
+}
+
+model UserManagementSettings {
+  id                String   @id @default(cuid())
+  tenantId          String   @unique
+  roles             Json     @default("{}")
+  permissions       Json     @default("[]")
+  onboarding        Json     @default("{}")
+  policies          Json     @default("{}")
+  rateLimits        Json     @default("{}")
+  sessions          Json     @default("{}")
+  invitations       Json     @default("{}")
+  clientSettings    Json?
+  teamSettings      Json?
+  lastUpdatedAt     DateTime @updatedAt
+  lastUpdatedBy     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  tenant            Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("user_management_settings")
 }
 
 model TranslationKey {

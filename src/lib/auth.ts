@@ -106,13 +106,68 @@ export const authOptions: NextAuthOptions = {
           }
         }
 
-        const user = await prisma.user.findUnique({ where: userByTenantEmail(tenantId, String(credentials.email as string).toLowerCase()) })
+        const emailKey = String(credentials.email as string).toLowerCase()
+
+        // Strategy 1: Tenant-scoped lookup (primary path for all users)
+        let user = await prisma.user.findUnique({
+          where: userByTenantEmail(tenantId, emailKey)
+        })
+
+        // Strategy 2: Cross-tenant SUPER_ADMIN lookup
+        // If the tenant-scoped lookup fails, check if this is a SUPER_ADMIN user
+        // attempting to access from a different tenant context
+        if (!user) {
+          try {
+            user = await prisma.user.findFirst({
+              where: {
+                email: emailKey,
+                role: 'SUPER_ADMIN'
+              },
+              // Performance: limit to 1 result since email should be unique per SUPER_ADMIN
+              take: 1
+            })
+
+            // Audit cross-tenant superadmin access for security monitoring
+            if (user) {
+              await logAudit({
+                action: 'auth.superadmin.cross_tenant_access',
+                actorId: user.id,
+                targetId: user.id,
+                details: {
+                  requestedTenantId: tenantId,
+                  userHomeTenantId: (user as any).tenantId,
+                  email: emailKey
+                }
+              }).catch(() => {})
+            }
+          } catch (err) {
+            // Log cross-tenant lookup failures for debugging
+            await logAudit({
+              action: 'auth.superadmin.cross_tenant_lookup_error',
+              actorId: null,
+              targetId: null,
+              details: {
+                tenantId,
+                email: emailKey,
+                error: String(err)
+              }
+            }).catch(() => {})
+          }
+        }
+
+        // If still no user found, fail authentication
         if (!user || !user.password) {
-          // Audit failed attempt without user enumeration
-          logAudit({ action: 'auth.login.failed', actorId: null, targetId: null, details: { tenantId, email: String(credentials.email || '').toLowerCase() } }).catch(() => {})
+          // Audit failed attempt without revealing whether user exists (prevent enumeration)
+          logAudit({
+            action: 'auth.login.failed',
+            actorId: null,
+            targetId: null,
+            details: { tenantId, email: emailKey }
+          }).catch(() => {})
           return null
         }
 
+        // Continue with existing password verification
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
         if (!isPasswordValid) {
           logAudit({ action: 'auth.login.failed', actorId: user.id, targetId: user.id, details: { tenantId } }).catch(() => {})

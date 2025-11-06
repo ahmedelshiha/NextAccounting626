@@ -1,19 +1,33 @@
 'use client'
 
-import dynamic from 'next/dynamic'
 import React, { Suspense } from 'react'
-import { isFeatureEnabled } from '@/lib/feature-flags'
-import AdminUsersPageRefactored from './page-refactored'
+import { EnterpriseUsersPage } from './EnterpriseUsersPage'
 
-// Dynamic import of Phase 4 implementation
-const AdminUsersPagePhase4 = dynamic(
-  () => import('./page-phase4').then(m => ({ default: m.default })),
-  {
-    loading: () => <PageLoadingSkeleton />,
-    ssr: true
-  }
-)
-
+/**
+ * Admin Users Page
+ *
+ * Main entry point for the admin users page.
+ * Uses the unified EnterpriseUsersPage implementation with tabbed interface.
+ *
+ * Features:
+ * - Dashboard Tab: User directory and operations overview
+ * - Workflows Tab: User lifecycle workflows
+ * - Bulk Operations Tab: Batch user operations
+ * - Audit Tab: Compliance and audit trail
+ * - RBAC Tab: Role and permission management
+ * - Admin Tab: System configuration
+ *
+ * Architecture:
+ * - Server-side data fetching via layout.tsx
+ * - Client-side state management for filters
+ * - UsersContextProvider for shared state
+ * - Dynamic imports for performance optimization
+ *
+ * Data Flow:
+ * - UsersContextProvider initialized in layout.tsx
+ * - Initial data fetched server-side and provided via context
+ * - Client components receive data through context
+ */
 function PageLoadingSkeleton() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -30,32 +44,10 @@ function PageLoadingSkeleton() {
   )
 }
 
-/**
- * ✅ Admin Users Page
- *
- * Main entry point for the admin users page.
- * Supports feature flag for Phase 4 enterprise redesign.
- *
- * Environment Variables:
- * - NEXT_PUBLIC_FLAGS='{"enablePhase4Enterprise":true}' - Enable Phase 4
- * - NEXT_PUBLIC_ENABLE_PHASE_4_ENTERPRISE=true - Enable Phase 4
- *
- * Data Flow:
- * - UsersContextProvider initialized in layout.tsx
- * - Initial data fetched server-side and provided via context
- * - Client components receive data through context
- */
 export default function AdminUsersPage() {
-  // Check if Phase 4 is enabled via feature flag (default to true for active development)
-  const isPhase4Enabled = isFeatureEnabled('enablePhase4Enterprise', true)
-
-  if (isPhase4Enabled) {
-    return (
-      <Suspense fallback={<PageLoadingSkeleton />}>
-        <AdminUsersPagePhase4 />
-      </Suspense>
-    )
-  }
-
-  return <AdminUsersPageRefactored />
+  return (
+    <Suspense fallback={<PageLoadingSkeleton />}>
+      <EnterpriseUsersPage />
+    </Suspense>
+  )
 }

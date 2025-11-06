@@ -140,11 +140,11 @@ export const SelectUsersStep: React.FC<SelectUsersStepProps> = ({
           <div>
             <label className="block text-sm font-medium mb-2">Role Filter</label>
             <Select
-              value={filter.roles?.[0] || ''}
+              value={filter.roles?.[0] || 'ALL_ROLES'}
               onValueChange={(role) =>
                 onFilterChange({
                   ...filter,
-                  roles: role ? [role] : []
+                  roles: role === 'ALL_ROLES' ? [] : [role]
                 })
               }
             >
@@ -152,7 +152,7 @@ export const SelectUsersStep: React.FC<SelectUsersStepProps> = ({
                 <SelectValue placeholder="All roles" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All roles</SelectItem>
+                <SelectItem value="ALL_ROLES">All roles</SelectItem>
                 <SelectItem value="ADMIN">Admin</SelectItem>
                 <SelectItem value="STAFF">Staff</SelectItem>
                 <SelectItem value="TEAM_MEMBER">Team Member</SelectItem>

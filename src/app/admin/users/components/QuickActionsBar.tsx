@@ -37,15 +37,17 @@ export function QuickActionsBar({
   isLoading = false
 }: QuickActionsBarProps) {
   return (
-    <div className="flex flex-wrap gap-2 p-4 bg-gray-50 border-b border-gray-200">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 p-3 sm:p-4 bg-gray-50 border-b border-gray-200">
       <Button
         onClick={onAddUser}
         disabled={isLoading}
-        className="bg-blue-600 hover:bg-blue-700"
+        className="bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm"
         size="sm"
+        title="Add new user"
       >
-        <span className="mr-2">➕</span>
-        Add User
+        <span className="mr-1 sm:mr-2">➕</span>
+        <span className="hidden sm:inline">Add User</span>
+        <span className="sm:hidden">Add</span>
       </Button>
 
       <Button
@@ -53,9 +55,12 @@ export function QuickActionsBar({
         disabled={isLoading}
         variant="outline"
         size="sm"
+        className="text-xs sm:text-sm"
+        title="Import CSV file"
       >
-        <span className="mr-2">📥</span>
-        Import CSV
+        <span className="mr-1 sm:mr-2">📥</span>
+        <span className="hidden sm:inline">Import CSV</span>
+        <span className="sm:hidden">Import</span>
       </Button>
 
       <Button
@@ -63,9 +68,12 @@ export function QuickActionsBar({
         disabled={isLoading}
         variant="outline"
         size="sm"
+        className="text-xs sm:text-sm"
+        title="Bulk update users"
       >
-        <span className="mr-2">⚙️</span>
-        Bulk Update
+        <span className="mr-1 sm:mr-2">⚙️</span>
+        <span className="hidden md:inline">Bulk Update</span>
+        <span className="md:hidden">Bulk</span>
       </Button>
 
       <Button
@@ -73,9 +81,12 @@ export function QuickActionsBar({
         disabled={isLoading}
         variant="outline"
         size="sm"
+        className="text-xs sm:text-sm"
+        title="Export user list"
       >
-        <span className="mr-2">📤</span>
-        Export
+        <span className="mr-1 sm:mr-2">📤</span>
+        <span className="hidden sm:inline">Export</span>
+        <span className="sm:hidden">Export</span>
       </Button>
 
       <Button
@@ -83,9 +94,12 @@ export function QuickActionsBar({
         disabled={isLoading}
         variant="outline"
         size="sm"
+        className="text-xs sm:text-sm"
+        title="Refresh data"
       >
-        <span className="mr-2">🔄</span>
-        Refresh
+        <span className="mr-1 sm:mr-2">🔄</span>
+        <span className="hidden md:inline">Refresh</span>
+        <span className="md:hidden">Refresh</span>
       </Button>
     </div>
   )
