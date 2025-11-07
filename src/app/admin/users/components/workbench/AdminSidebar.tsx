@@ -275,7 +275,7 @@ export default function AdminSidebar({
           align-items: center;
           justify-content: space-between;
           padding-bottom: 0.75rem;
-          border-bottom: 1px solid var(--color-border, #e2e8f0);
+          border-bottom: 1px solid #e5e7eb;
           gap: 0.5rem;
         }
 
@@ -298,7 +298,7 @@ export default function AdminSidebar({
         }
 
         .admin-sidebar-trigger:hover {
-          background-color: var(--color-hover, rgba(0, 0, 0, 0.05));
+          background-color: #f3f4f6;
           border-radius: 0.375rem;
           padding-left: 0.25rem;
           padding-right: 0.25rem;
@@ -308,6 +308,7 @@ export default function AdminSidebar({
           width: 1rem;
           height: 1rem;
           transition: transform 0.3s ease;
+          color: #6b7280;
         }
 
         .admin-sidebar-content-inner {
@@ -316,7 +317,7 @@ export default function AdminSidebar({
           gap: 1rem;
           margin-top: 0.75rem;
           padding: 0.75rem;
-          background-color: var(--color-bg-subtle, #f8fafc);
+          background-color: #f9fafb;
           border-radius: 0.375rem;
         }
 
@@ -329,7 +330,7 @@ export default function AdminSidebar({
         .admin-sidebar-filter-label {
           font-size: 0.75rem;
           font-weight: 600;
-          color: var(--color-text-secondary, #64748b);
+          color: #6b7280;
           text-transform: uppercase;
           letter-spacing: 0.05em;
         }
@@ -337,33 +338,22 @@ export default function AdminSidebar({
         .admin-sidebar-filter-select {
           padding: 0.5rem 0.75rem;
           font-size: 0.875rem;
-          border: 1px solid var(--color-border, #e2e8f0);
+          border: 1px solid #d1d5db;
           border-radius: 0.375rem;
-          background-color: white;
-          color: var(--color-text, #1e293b);
+          background-color: #ffffff;
+          color: #111827;
           transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .admin-sidebar-filter-select:hover {
-          border-color: var(--color-border-hover, #cbd5e1);
+          border-color: #9ca3af;
+          background-color: #f9fafb;
         }
 
         .admin-sidebar-filter-select:focus {
           outline: none;
-          border-color: var(--color-focus, #3b82f6);
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        @media (prefers-color-scheme: dark) {
-          .admin-sidebar-filter-select {
-            background-color: var(--color-surface-dark, #1e293b);
-            color: var(--color-text-dark, #f1f5f9);
-            border-color: var(--color-border-dark, #334155);
-          }
-
-          .admin-sidebar-content-inner {
-            background-color: var(--color-bg-dark-subtle, rgba(15, 23, 42, 0.5));
-          }
+          border-color: #1f55d4;
+          box-shadow: 0 0 0 3px rgba(31, 85, 212, 0.1);
         }
 
         /* Scrollbar styling */
@@ -376,7 +366,7 @@ export default function AdminSidebar({
         }
 
         .admin-sidebar-content::-webkit-scrollbar-thumb {
-          background-color: var(--color-scroll-thumb, #cbd5e1);
+          background-color: #cbd5e1;
           border-radius: 2px;
         }
       `}</style>
