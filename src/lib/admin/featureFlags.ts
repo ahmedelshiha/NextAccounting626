@@ -2,32 +2,21 @@
  * Admin Feature Flags
  *
  * Centralized feature flag management for admin dashboard features.
- * Enables gradual rollout and safe experimentation.
+ * NOTE: AdminWorkBench is now permanently enabled in production.
+ * Legacy feature flag code retained for backward compatibility.
  */
 
 /**
  * Check if AdminWorkBench (new dashboard UI) is enabled
  *
- * Checks in order:
- * 1. Environment variable: NEXT_PUBLIC_ADMIN_WORKBENCH_ENABLED
- * 2. Default: false (disabled by default for safe rollout)
+ * ✅ ALWAYS RETURNS TRUE - AdminWorkBench is the default UI
+ * No environment variables are needed.
+ *
+ * @returns true - AdminWorkBench is always enabled
  */
 export const isAdminWorkBenchEnabled = (): boolean => {
-  // Check environment variable first
-  if (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_ADMIN_WORKBENCH_ENABLED) {
-    return process.env.NEXT_PUBLIC_ADMIN_WORKBENCH_ENABLED === 'true'
-  }
-
-  // Client-side check
-  if (typeof window !== 'undefined') {
-    const envEnabled = (window as any).__ENV__?.NEXT_PUBLIC_ADMIN_WORKBENCH_ENABLED
-    if (envEnabled !== undefined) {
-      return envEnabled === 'true'
-    }
-  }
-
-  // Default: disabled for safe rollout
-  return false
+  // AdminWorkBench is now the default and only dashboard UI
+  return true
 }
 
 /**
