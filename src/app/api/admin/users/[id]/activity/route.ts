@@ -15,10 +15,14 @@ export const GET = withTenantContext(async (request: NextRequest, { params }: { 
     if (!hasPermission(ctx.role, PERMISSIONS.ANALYTICS_VIEW)) return respond.forbidden('Forbidden')
 
     const { userId } = params
-    const tenantId = ctx.tenantId ?? null
+    const tenantId = ctx.tenantId
 
-    if (!userId || !tenantId) {
-      return NextResponse.json({ error: 'Missing userId or tenantId' }, { status: 400 })
+    if (!userId) {
+      return NextResponse.json({ error: 'Missing userId' }, { status: 400 })
+    }
+
+    if (!tenantId) {
+      return respond.badRequest('Tenant context is required')
     }
 
     const { searchParams } = new URL(request.url)
