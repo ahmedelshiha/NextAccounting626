@@ -136,6 +136,19 @@ export function UserDirectoryFilterBarEnhanced({
     onFiltersChange(filterState)
   }, [onFiltersChange])
 
+  const handleApplyAdvancedQuery = useCallback((query: FilterGroup | FilterCondition) => {
+    const filtered = queryBuilder.applyQueryToUsers(allUsers)
+    const simpleFilters = queryBuilder.queryToFilterState()
+    onFiltersChange(simpleFilters)
+  }, [queryBuilder, allUsers, onFiltersChange])
+
+  const handleLoadTemplate = useCallback((template: any) => {
+    if (template.query) {
+      queryBuilder.setQuery(template.query)
+      handleApplyAdvancedQuery(template.query)
+    }
+  }, [queryBuilder, handleApplyAdvancedQuery])
+
   const handleSelectAllChange = useCallback((checked: boolean) => {
     onSelectAll(checked)
   }, [onSelectAll])
