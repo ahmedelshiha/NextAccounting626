@@ -18,6 +18,11 @@ export const GET = withTenantContext(async (request: NextRequest) => {
     }
 
     const context = tenantContext.getContext()
+
+    if (!context.tenantId) {
+      return NextResponse.json({ error: 'Tenant context is required' }, { status: 400 })
+    }
+
     const hasAccess = await hasPermission(context.userId, 'reports.read')
     if (!hasAccess) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -74,6 +79,15 @@ export const POST = withTenantContext(async (request: NextRequest) => {
     }
 
     const context = tenantContext.getContext()
+
+    if (!context.tenantId) {
+      return NextResponse.json({ error: 'Tenant context is required' }, { status: 400 })
+    }
+
+    if (!context.userId) {
+      return NextResponse.json({ error: 'User context is required' }, { status: 400 })
+    }
+
     const hasAccess = await hasPermission(context.userId, 'reports.write')
     if (!hasAccess) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -103,15 +117,10 @@ export const POST = withTenantContext(async (request: NextRequest) => {
       headerText: headerText || null,
       footerText: footerText || null,
       templateId: templateId || null,
+      tenantId: context.tenantId,
+      userId: context.userId,
       createdAt: new Date(),
       updatedAt: new Date()
-    }
-
-    if (context.tenantId) {
-      reportData.tenantId = context.tenantId
-    }
-    if (context.userId) {
-      reportData.userId = context.userId
     }
 
     const report = await prisma.report.create({
