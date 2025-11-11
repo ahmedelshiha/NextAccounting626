@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { withTenantContext } from '@/lib/api-wrapper'
 import { tenantContext } from '@/lib/tenant-context'
 import { hasPermission } from '@/lib/permissions'
 import { rateLimitAsync } from '@/lib/rate-limit'
-import { generateReportHTML, generateExcelReport, generateCSVReport, applyFilters, calculateSummaryStats } from '@/app/admin/users/utils/report-builder'
+import { generateReportHTML, applyFilters, calculateSummaryStats } from '@/app/admin/users/utils/report-builder'
 import { Report, ReportSection } from '@/app/admin/users/types/report-builder'
 
 export const POST = withTenantContext(async (request: NextRequest, { params }: { params: { id: string } }) => {
