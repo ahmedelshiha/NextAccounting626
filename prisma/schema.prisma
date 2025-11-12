@@ -340,6 +340,8 @@ model Tenant {
   documentLinks         DocumentLink[]
   documentAuditLogs     DocumentAuditLog[]
   supportTickets        SupportTicket[]           @relation("SupportTickets")
+  knowledgeBaseCategories KnowledgeBaseCategory[]   @relation("KnowledgeBaseCategories")
+  knowledgeBaseArticles KnowledgeBaseArticle[]      @relation("KnowledgeBaseArticles")
 
   @@index([status])
 }
