@@ -29,9 +29,10 @@ export const POST = withTenantContext(async (request: NextRequest) => {
     const body = await request.json()
     const validated = SubmitEInvoiceSchema.parse(body)
 
-    // Get invoice
+    // Get invoice with items and client
     const invoice = await prisma.invoice.findFirst({
       where: { id: validated.invoiceId, tenantId },
+      include: { items: true, client: true },
     })
 
     if (!invoice) {
