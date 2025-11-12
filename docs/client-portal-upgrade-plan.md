@@ -412,6 +412,58 @@ Mobile and Desktop dashboards deliver identical functions with layout-specific a
 
 ---
 
+## 5A) Enterprise Architecture Addendum (Oracle Fusion / SAP–inspired)
+
+This addendum elevates the portal to enterprise-grade parity with Oracle Fusion/SAP patterns while fitting our Next.js + Postgres stack.
+
+- Master Data Management (MDM)
+  - Domains: Parties (customers/suppliers/owners), Products/Services, TaxCodes, Units of Measure, BankAccounts, Branches/Locations, Chart-of-Categories for VAT mapping.
+  - Golden-record with survivorship rules, duplicate detection, merge/unmerge audit, soft-delete with end-dating, versioned attributes.
+  - Country overlays for attributes (e.g., TRN formats, activity codes), with governance workflows for critical changes.
+
+- Workflow/BPM and Approval Matrix
+  - State machines for Entities, KYC, Documents, Invoices, Bills, Returns, Payments.
+  - Dynamic approvers by policy: role, amount thresholds, obligation type, country, SoD checks. Parallel/serial, delegation, vacation rules, escalations with SLAs.
+  - Evidence bundles auto-attached to approvals (who/what/when/why) for audit.
+
+- Policy/Rules Engine
+  - Decision tables for: VAT rates/exemptions, ESR relevancy, UBO triggers, WHT applicability, filing calendar exceptions.
+  - Rules stored as versioned JSON with testing harness and rollback. Admin UI to simulate decisions on sample data; every evaluation emits an auditable trace.
+
+- Integration Hub (iPaaS-lite)
+  - Connectors: Email inbox to Documents, SFTP, Webhooks, WhatsApp/SMS, ERP (generic CSV/JSON adapters), Government APIs (FTA, ZATCA, ETA), Payment processors.
+  - Patterns: scheduled pulls, webhooks, idempotent writes, retry with backoff, DLQ + replay, schema validation, correlation IDs.
+  - Monitoring: per-connector metrics, circuit breakers, tenant-level quotas and rate limits.
+
+- Data Platform & Analytics
+  - Operational store → warehouse (star schemas for filings, invoices, payments, documents, tasks). Slowly changing dimensions for entities and registrations.
+  - Pre-built dashboards: compliance timeliness, VAT position, Zakat/WHT rollups, workload, SLA adherence. Export to CSV/PDF, scheduled email.
+  - Data access governed via row/column policies; PII masking in BI extracts.
+
+- IAM & Security (Enterprise)
+  - SSO (SAML/OIDC), SCIM provisioning, step-up auth, device posture signals, session anomaly detection.
+  - ABAC: policies on attributes (country, entity risk, data sensitivity). SoD libraries to prevent conflicting role assignments.
+  - Key rotation, envelope encryption for credentials/certificates.
+
+- GRC & Records Management
+  - Retention schedules by artifact type/country, legal holds, e-discovery exports, immutable logs (hash chains), configurable data residency.
+
+- Resilience & Performance
+  - SLOs: availability 99.9%, p95 <250ms for reads, <800ms for critical writes. RTO ≤ 30m, RPO ≤ 5m.
+  - Backups + PITR, regional failover design (optional), graceful degradation, feature kill switches.
+
+- Globalization & Configuration
+  - Multi-currency with FX rates source, fiscal calendars per country, localized number/date/dir (RTL), weekend patterns.
+
+- Release & Change Management
+  - Environments (dev/stage/prod), feature flag lifecycle, migration playbooks, change approvals with CAB logs, canary + phased rollouts.
+
+- Testing Strategy (Enterprise)
+  - Unit/integration/contract tests for adapters; synthetic monitoring; soak/load tests on filing spikes; chaos drills on registry outages.
+
+- Deliverables
+  - Data dictionary, event catalog, approval matrices, rules catalog, sequence diagrams, RACI for operations, runbooks per integration.
+
 ## 6) Technical Blueprint
 
 - Stack alignment
