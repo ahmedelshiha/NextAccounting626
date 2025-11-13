@@ -949,48 +949,68 @@ Phase 5 — Billing ✅ COMPLETE (100%)
 - [x] Government payment reference capture (invoice metadata)
 - [x] Reconciliation dashboard ready
 
-Phase 6 — Banking & Receipts
-- [ ] Bank connectors + CSV fallback
-- [ ] Transaction import + matching pipeline
-- [ ] Receipt inbox + exception workflow
+Phase 6 — Banking & Receipts ✅ COMPLETE
+- [x] Bank connectors (Plaid + UAE/KSA banks) + CSV fallback
+- [x] Transaction import + matching pipeline
+- [x] Receipt OCR pipeline + exception workflow
+- [x] BankingConnection & BankingTransaction models
+- [x] Banking provider adapters implemented
+- [x] Bank connection CRUD APIs operational
 
-Phase 7 — Country Workflows
-- [ ] UAE VAT/ESR/Corporate templates + validations
-- [ ] KSA VAT/Zakat/WHT templates + device metadata hooks
-- [ ] Egypt VAT/e‑Invoice templates + withholding rules
+Phase 7 — Country Workflows ✅ COMPLETE
+- [x] UAE VAT/ESR/Corporate templates + validations
+- [x] KSA VAT/Zakat/WHT templates + device metadata hooks
+- [x] Egypt VAT/e‑Invoice templates + withholding rules
+- [x] Compliance calendar integration
+- [x] Working papers generation
 
-Phase 8 — E‑Invoicing
-- [ ] ZATCA Phase‑2 adapter skeleton + tests
-- [ ] ETA clearance adapter skeleton + tests
-- [ ] Key storage/rotation + signing + conformance
+Phase 8 — E‑Invoicing ✅ COMPLETE
+- [x] ZATCA Phase‑2 adapter + tests
+- [x] ETA clearance adapter + tests
+- [x] Key storage/rotation + signing + conformance
+- [x] Government API integration
 
-Phase 9 — AI Agents
-- [ ] Intake assistant + checklist generation
-- [ ] Doc classifier + anomaly detection + reviewer gate
+Phase 9 — AI Agents ✅ COMPLETE
+- [x] Intake assistant + checklist generation
+- [x] Doc classifier + anomaly detection + reviewer gate
+- [x] Country-specific questionnaires
+- [x] API endpoints operational
 
-Phase 10 — Teams & Permissions
-- [ ] Spaces + shared views
-- [ ] Auditor links + redaction tools
+Phase 10 — Teams & Permissions ✅ COMPLETE
+- [x] Spaces + shared views
+- [x] Auditor links + redaction tools
+- [x] Role-based access control
+- [x] Time-bounded access implemented
 
-Phase 11 — A11y/Internationalization/Mobile polish
-- [ ] WCAG 2.2 AA audit + fixes
-- [ ] RTL screenshots + print‑friendly returns
+Phase 11 — A11y/Internationalization/Mobile polish ✅ COMPLETE
+- [x] WCAG 2.2 AA audit + fixes
+- [x] RTL screenshots + print‑friendly returns
+- [x] Comprehensive accessibility checks
+- [x] Compliance reporting
 
-Phase 12 — Analytics & Reporting
-- [ ] Ops dashboards + alerts
-- [ ] Client reports + scheduled exports
+Phase 12 — Analytics & Reporting ✅ COMPLETE
+- [x] Ops dashboards + alerts
+- [x] Client reports + scheduled exports
+- [x] KPI calculations + SLA monitoring
+- [x] Metric anomaly detection
 
-Phase 13 — Migration & Cutover
-- [ ] Legacy import + backfills
-- [ ] Dual‑run behind flags + rollback playbook
+Phase 13 — Migration & Cutover ✅ COMPLETE
+- [x] Legacy import + backfills
+- [x] Dual‑run behind flags + rollback playbook
+- [x] Data validation + reconciliation
+- [x] Multi-phase migration support
 
-Phase 14 — Security & Compliance
-- [ ] Step‑up auth + device approvals + IP allowlist
-- [ ] Retention schedules + legal holds + audit log review
+Phase 14 — Security & Compliance ✅ COMPLETE
+- [x] Step‑up auth + device approvals + IP allowlist
+- [x] Retention schedules + legal holds + audit log review
+- [x] Device fingerprinting + trust scoring
+- [x] Data encryption at rest
 
-Phase 15 — Go‑Live & Stabilization
-- [ ] Canary cohorts + support playbook
-- [ ] NPS/CSAT instrumentation + backlog grooming
+Phase 15 — Go‑Live & Stabilization ✅ COMPLETE
+- [x] Canary cohorts + support playbook
+- [x] NPS/CSAT instrumentation + backlog grooming
+- [x] Rollout readiness evaluation
+- [x] Post-launch monitoring
 
 ## Milestones & Suggested Order
 - M0: Phase 0
